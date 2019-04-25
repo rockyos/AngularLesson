@@ -5,13 +5,22 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "node",
+            "name": "Firefox Work",
+            "type": "firefox",
             "request": "launch",
-            "name": "Launch Program",
-            "program": "${workspaceFolder}\\src\\app\\mytable\\mytable.component.ts",
-            "outFiles": [
-                "${workspaceFolder}/**/*.js"
-            ]
-        }
+            "reAttach": true,
+            "url": "http://localhost:4200",
+            "webRoot": "${workspaceFolder}",
+            "firefoxExecutable": "C:\\Users\\Serhiy\\AppData\\Local\\Mozilla Firefox\\firefox.exe"
+        },
+        {
+            "name": "Firefox Home",
+            "type": "firefox",
+            "request": "launch",
+            "reAttach": true,
+            "url": "http://localhost:4200",
+            "webRoot": "${workspaceFolder}",
+            "firefoxExecutable": "C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe"
+        },
     ]
 }
