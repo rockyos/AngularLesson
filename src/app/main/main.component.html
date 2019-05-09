@@ -1,3 +1,28 @@
-<p>
-  main works!
-</p>
+<table class="table table-borderless">
+    <div *ngIf="photos">No Photos</div>
+    <tr *ngFor="let item of photos">
+        <td><img class="img-thumbnail mx-auto d-block" src="'Photos/ImageResize/{{item.guid}}?width=320" alt="Foto" /></a></td>
+        <td>{{item.photoName}}</td>
+        <td><button class="btn btn-outline-danger font-weight-bold" (click)="deleteBtn({{item}})">Delete</button></td>
+    </tr>
+</table>
+
+
+<!-- <form id="post_file_form" enctype="multipart/form-data" method="post">
+  <div class="d-flex justify-content-center">
+      <div class="btn sendbtn btn-outline-info">
+          <span class="font-weight-bold">Select image</span>
+          <input asp-for="FormFile" type="file" accept="image/*" name="FormFile" />
+          <span asp-validation-for="FormFile" class="text-danger font-weight-bold"></span>
+      </div>
+  </div>
+  <hr />
+  <div class="d-flex justify-content-end">
+      <div class="btn-group" role="group">
+          <span id="btn_reset" class="btn btn-outline-dark font-weight-bold">Cancel</span>
+          <span id="save_button" class="btn btn-outline-success font-weight-bold">
+              Save<img id="loaderimg" src="/src/assets/images/loaderimg.gif" />
+          </span>
+      </div>
+  </div>
+</form> -->
