@@ -9,6 +9,7 @@ import { Photo } from '../photo';
 })
 export class MainComponent implements OnInit {
   photos: Photo[];
+  file: File;
   constructor(private service: HttpService) { }
 
   ngOnInit() {
@@ -16,7 +17,12 @@ export class MainComponent implements OnInit {
   }
 
   getData(){
-    this.service.getPhotos().subscribe(resualt => { this.photos = resualt, console.log(this.photos)});
+    this.service.getPhotos().subscribe(resualt =>  this.photos = resualt);
+  }
+
+  addPhoto(event){
+    this.file = event.target || event.srcElement;
+    this.service.addPhoto(this.file).subscribe(response => this.getData());
   }
 
   deleteBtn(photo: Photo){

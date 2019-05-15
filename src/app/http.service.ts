@@ -7,15 +7,21 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class HttpService {
-  private url = "http://localhost:49508/" 
+  private url = "https://localhost:44302/api/photo"; 
   constructor(private http: HttpClient) { }
 
   public getPhotos(): Observable<Array<Photo>>{
-    return this.http.get<Array<Photo>>(this.url + "Photos/GetListfromDb");
+    return this.http.get<Array<Photo>>(this.url);
   }
 
-  public delPhoto(photo: Photo): Observable<string>{
-    let data: any = {guid : photo.guid}
-    return this.http.post<string>(this.url + "Delete", data);
+  public addPhoto(Images: File): Observable<File>{
+    const formData = new FormData();
+    formData.append('file', Images);
+    return this.http.post<File>(this.url, formData);
+  }
+
+  public delPhoto(photo: Photo): Observable<any>{
+    //let data: any = {guid : photo.guid};
+    return this.http.delete(this.url + "/" + photo.guid);
   }
 }
