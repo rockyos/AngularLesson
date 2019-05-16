@@ -21,27 +21,27 @@ export class MainComponent implements OnInit {
     this.getData();
   }
 
-  getData(){
-    this.service.getPhotos().subscribe(resualt =>  this.photos = resualt);
+  getData() {
+    this.service.getPhotos().subscribe(resualt => this.photos = resualt);
   }
 
-  addPhoto(event){
-    this.file = event.target || event.srcElement;
-    this.service.addPhoto(this.file).subscribe(response => this.getData());
+  addPhoto(fileInput: any) {
+    const newFile = fileInput.target.files[0] as File;
+    this.service.addPhoto(newFile).subscribe(response => this.getData());
   }
 
-  saveBtn(){
+  saveBtn() {
     //this.service.save().subscribe();
     console.log("save");
   }
 
-  resetBtn(){
-     //this.service.reset().subscribe();
+  resetBtn() {
+    //this.service.reset().subscribe();
     console.log("reset");
   }
 
-  deleteBtn(photo: Photo){
+  deleteBtn(photo: Photo) {
     let index = this.photos.indexOf(photo);
-    this.service.delPhoto(photo).subscribe(response => this.photos.splice(index,1));
+    this.service.delPhoto(photo).subscribe(response => this.photos.splice(index, 1));
   }
 }

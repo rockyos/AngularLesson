@@ -1,0 +1,8 @@
+PhotoAPI/bin/
+PhotoAPI/obj/
+.vs/
+PhotoAPI/bower_components/
+PhotoAPI/node_modules/
+PhotoAPI/wwwroot/photo/
+PhotoAPI/logs/
+PhotoAPI/ScaffoldingReadme.txt

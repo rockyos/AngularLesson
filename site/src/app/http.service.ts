@@ -15,14 +15,12 @@ export class HttpService {
     return this.http.get<Array<Photo>>(url);
   }
 
-  public addPhoto(Images: File): Observable<File> {
-    const httpOptions = {
-      headers: new HttpHeaders({ 'Content-Type': 'application/json' })
-    };
+  public addPhoto(newImage: File): Observable<string> {
     const formData = new FormData();
-    formData.append('file', Images);
+    console.log(newImage);
+    formData.append('newImage', newImage, newImage.name);
     const url = `${environment.apiUrl}photo`;
-    return this.http.post<File>(url, formData, httpOptions);
+    return this.http.post<string>(url, formData);
   }
 
   // public save(): Observable<any>{
