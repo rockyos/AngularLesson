@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { HttpService } from '../http.service';
 import { Photo } from '../photo';
 import { BlockingProxy } from 'blocking-proxy';
+import { environment } from 'src/environments/environment.prod';
 
 @Component({
   selector: 'app-main',
@@ -12,9 +13,9 @@ export class MainComponent implements OnInit {
   photos: Photo[];
   file: File;
   hiddenIcon: boolean = false;
+  url = `${environment.apiUrl}photo`;
+
   constructor(private service: HttpService) { }
-  
-  url = this.service.url;
 
   ngOnInit() {
     this.getData();
