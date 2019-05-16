@@ -2,9 +2,9 @@
     <div *ngIf="!photos">No Photos</div>
     <tr *ngFor="let item of photos">
         <td>
-            <a data-fancybox="gallery" href="https://localhost:44302/api/photo/{{item.guid}}">
+            <a data-fancybox="gallery" href="{{url}}/{{item.guid}}">
                 <img class="img-thumbnail mx-auto d-block"
-                    src="https://localhost:44302/api/photo/{{item.guid}}?width=320" alt="Foto" />
+                    src="{{url}}/{{item.guid}}?width=320" alt="Foto" />
             </a>
         </td>
         <td>{{item.photoName}}</td>
@@ -24,9 +24,10 @@
   <hr />
   <div class="d-flex justify-content-end">
       <div class="btn-group" role="group">
-          <span id="btn_reset" class="btn btn-outline-dark font-weight-bold">Cancel</span>
-          <span id="save_button" class="btn btn-outline-success font-weight-bold">
-              Save<img id="loaderimg" src="~/src/assets/images/loaderimg.gif" />
+          <span id="btn_reset" class="btn btn-outline-dark font-weight-bold" (click)="resetBtn()">Cancel</span>
+          <span id="save_button" class="btn btn-outline-success font-weight-bold" (click)="saveBtn()">
+              Save
+              <img id="loaderimg" *ngIf="hiddenIcon" src="../assets/images/loaderimg.gif" />
           </span>
       </div>
   </div>
