@@ -48,8 +48,7 @@ namespace PhotoAPI
 
             services.AddCors();
 
-            services.AddDistributedMemoryCache(); // IDistributedCache
-
+            services.AddDistributedMemoryCache(); 
             services.AddSession(options =>
             {
                 options.IdleTimeout = TimeSpan.FromMinutes(120);

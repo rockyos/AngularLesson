@@ -21,19 +21,19 @@ namespace PhotoAPI.Controllers
         private readonly IResizeService _resizer;
         private readonly ISavePhotoService _savePhotoService;
         private readonly IDeleteService _deleteService;
-        private readonly IAddPhotoService _indexService;
+        private readonly IAddPhotoService _photoService;
 
 
         protected ISession Session => HttpContext.Session;
 
         public PhotoController(IGetPhotoService getPhotoService, IResizeService resizer, ISavePhotoService savePhotoService,
-            IDeleteService deleteService, IAddPhotoService indexService)
+            IDeleteService deleteService, IAddPhotoService photoService)
         {
             _getPhotoService = getPhotoService;
             _resizer = resizer;
             _savePhotoService = savePhotoService;
             _deleteService = deleteService;
-            _indexService = indexService;
+            _photoService = photoService;
         }
 
         [HttpGet]
@@ -55,7 +55,7 @@ namespace PhotoAPI.Controllers
         [Route("send")]
         public async Task PostAsync(IFormFile newImage)
         {
-            await _indexService.GetIndexServiceAsync(newImage, Session, _sessionkey);
+            await _photoService.AddPhotoServiceAsync(newImage, Session, _sessionkey);
         }
 
         [HttpPost]

@@ -31,11 +31,11 @@ export class MainComponent implements OnInit {
   }
 
   saveBtn() {
-    this.service.save().subscribe();
+    this.service.save().subscribe(response => this.getData());
   }
 
   resetBtn() {
-    this.service.reset().subscribe();
+    this.service.reset().subscribe(response => this.getData());
   }
 
   deleteBtn(photo: Photo) {

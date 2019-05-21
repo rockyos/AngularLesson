@@ -6,6 +6,6 @@ namespace PhotoAPI.Services.Interfaces
 {
     public interface IAddPhotoService
     {
-        Task GetIndexServiceAsync(IFormFile photoFromClient, ISession session, string sessionkey);
+        Task AddPhotoServiceAsync(IFormFile newImage, ISession session, string sessionkey);
     }
 }

@@ -12,14 +12,14 @@ namespace PhotoAPI.Services
 {
     public class AddPhotoService : IAddPhotoService
     {
-        public async Task GetIndexServiceAsync(IFormFile photoFromClient, ISession session, string sessionkey)
+        public async Task AddPhotoServiceAsync(IFormFile newImage, ISession session, string sessionkey)
         {
             var photosInSession = session.Get<List<Photo>>(sessionkey);
             var photo = new Photo();
-            using (var reader = new BinaryReader(photoFromClient.OpenReadStream()))
+            using (var reader = new BinaryReader(newImage.OpenReadStream()))
             {
-                var img = reader.ReadBytes((int)photoFromClient.Length);
-                photo.PhotoName = photoFromClient.FileName;
+                var img = reader.ReadBytes((int)newImage.Length);
+                photo.PhotoName = newImage.FileName;
                 photo.ImageContent = img;
                 photo.Guid = Guid.NewGuid().ToString();
             }
@@ -28,8 +28,7 @@ namespace PhotoAPI.Services
             {
                 photosInSession.Add(photo);
                 session.Set(sessionkey, photosInSession);
-            }
-            else
+            } else
             {
                 session.Set(sessionkey, new List<Photo>() { photo });
             }
