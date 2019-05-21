@@ -65,7 +65,7 @@ namespace PhotoAPI
             services.AddScoped<IResizeService, ResizeService>();
             services.AddScoped<IGetPhotoService, GetPhotoService>();
             services.AddScoped<IAddPhotoService, AddPhotoService>();
-            //services.AddScoped<ISavePhotoService, SavePhotoService>();
+            services.AddScoped<ISavePhotoService, SavePhotoService>();
             services.AddScoped<IDeleteService, DeleteService>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1).AddViewOptions(options =>

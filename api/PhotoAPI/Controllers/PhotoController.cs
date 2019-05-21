@@ -19,16 +19,19 @@ namespace PhotoAPI.Controllers
         private readonly string _sessionkey = "photos";
         private readonly IGetPhotoService _getPhotoService;
         private readonly IResizeService _resizer;
+        private readonly ISavePhotoService _savePhotoService;
         private readonly IDeleteService _deleteService;
         private readonly IAddPhotoService _indexService;
 
+
         protected ISession Session => HttpContext.Session;
 
-        public PhotoController(IGetPhotoService getPhotoService, IResizeService resizer, IDeleteService deleteService,
-            IAddPhotoService indexService)
+        public PhotoController(IGetPhotoService getPhotoService, IResizeService resizer, ISavePhotoService savePhotoService,
+            IDeleteService deleteService, IAddPhotoService indexService)
         {
             _getPhotoService = getPhotoService;
             _resizer = resizer;
+            _savePhotoService = savePhotoService;
             _deleteService = deleteService;
             _indexService = indexService;
         }
@@ -49,9 +52,25 @@ namespace PhotoAPI.Controllers
         }
 
         [HttpPost]
+        [Route("send")]
         public async Task PostAsync(IFormFile newImage)
         {
             await _indexService.GetIndexServiceAsync(newImage, Session, _sessionkey);
+        }
+
+        [HttpPost]
+        [Route("save")]
+        public async Task PostSaveAsync()
+        {
+            await _savePhotoService.SavePhotoAsync(Session, _sessionkey);
+            HttpContext.Session.Clear();
+        }
+
+        [HttpPost]
+        [Route("reset")]
+        public void PostReset()
+        {
+            HttpContext.Session.Clear();
         }
 
         [HttpPut("{id}")]
