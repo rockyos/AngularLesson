@@ -21,7 +21,7 @@ import { FormsModule }   from '@angular/forms';
     HttpClientModule,
     FormsModule
   ],
-  providers: [HttpService, MainComponent],
+  providers: [HttpService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
