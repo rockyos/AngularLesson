@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpService } from '../http.service';
 import { Photo } from '../photo';
-import { BlockingProxy } from 'blocking-proxy';
 import { environment } from 'src/environments/environment.prod';
 
 @Component({
@@ -11,35 +10,24 @@ import { environment } from 'src/environments/environment.prod';
 })
 export class MainComponent implements OnInit {
   photos: Photo[];
-  file: File;
-  hiddenIcon: boolean = false;
+  
   url = `${environment.apiUrl}photo`;
 
   constructor(private service: HttpService) { }
 
   ngOnInit() {
     this.getData();
+    console.log('onInit'); 
   }
 
   getData() {
-    this.service.getPhotos().subscribe(resualt => this.photos = resualt);
+    this.service.getPhotos().subscribe(resualt => {this.photos = resualt, console.log("gettt main: " + this.photos.length)});
   }
 
-  addPhoto(fileInput: any) {
-    const newFile = fileInput.target.files[0] as File;
-    this.service.addPhoto(newFile).subscribe(response => this.getData());
-  }
-
-  saveBtn() {
-    this.service.save().subscribe(response => this.getData());
-  }
-
-  resetBtn() {
-    this.service.reset().subscribe(response => this.getData());
-  }
-
+ 
   deleteBtn(photo: Photo) {
     let index = this.photos.indexOf(photo);
-    this.service.delPhoto(photo).subscribe(response => this.photos.splice(index, 1));
+    this.service.delPhoto(photo).subscribe(response => {this.photos.splice(index, 1), console.log("Array photos: " + this.photos.length)});
+    
   }
 }

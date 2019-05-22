@@ -6,18 +6,22 @@ import { AppComponent } from './app.component';
 import { MainComponent } from './main/main.component';
 import { HttpService } from './http.service';
 import { HttpClientModule} from "@angular/common/http";
+import { FormComponent } from './form/form.component';
+import { FormsModule }   from '@angular/forms';
 
 @NgModule({
   declarations: [
     AppComponent,
-    MainComponent
+    MainComponent,
+    FormComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
-    HttpClientModule
+    HttpClientModule,
+    FormsModule
   ],
-  providers: [HttpService],
+  providers: [HttpService, MainComponent],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
