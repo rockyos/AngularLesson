@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -15,6 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PhotoAPI.Automapper;
+using PhotoAPI.Models.Email;
 using PhotoAPI.Models.Entity;
 using PhotoAPI.Repository;
 using PhotoAPI.Services;
@@ -37,14 +39,14 @@ namespace PhotoAPI
             string conn = Configuration.GetConnectionString("ConnectionToDB");
             services.AddDbContext<PhotoContext>(options => options.UseSqlServer(conn));
 
-            //services.AddIdentity<IdentityUser, IdentityRole>(config =>
-            //{
-            //    config.SignIn.RequireConfirmedEmail = false;
-            //}).AddEntityFrameworkStores<PhotoContext>()
-            //.AddDefaultTokenProviders();
+            services.AddIdentity<IdentityUser, IdentityRole>(config =>
+            {
+                config.SignIn.RequireConfirmedEmail = false;
+            }).AddEntityFrameworkStores<PhotoContext>()
+            .AddDefaultTokenProviders();
 
-            //services.Configure<EmailSettings>(Configuration.GetSection("EmailSettings"));
-            //services.AddSingleton<IEmailSender, EmailSenderService>();
+            services.Configure<EmailSettings>(Configuration.GetSection("EmailSettings"));
+            services.AddSingleton<IEmailSender, EmailSenderService>();
 
             services.AddCors();
 
@@ -96,7 +98,7 @@ namespace PhotoAPI
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseCookiePolicy();
-            //app.UseAuthentication();
+            app.UseAuthentication();
             app.UseCors(builder => builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod().AllowCredentials());
             app.UseMvc();
         }
