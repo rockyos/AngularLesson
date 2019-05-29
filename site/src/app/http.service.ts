@@ -50,10 +50,9 @@ export class HttpService {
   public loginPost(email, password): Observable<string>{
     console.log(email + " : " + password);
     const url = `${environment.apiUrl}account/login`;
-    const httpOptions = {
-      headers: new HttpHeaders({ 'Content-Type': 'application/json' })
-    };
-    const body = {email : email, password: password }
-    return this.http.post<string>(url, body, httpOptions);
+    const formData = new FormData();
+    formData.append('Email', email);
+    formData.append('Password', password);
+    return this.http.post<string>(url, formData);
   }
 }

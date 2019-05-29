@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
+using PhotoAPI.Models.Identity;
 
 namespace PhotoAPI.Controllers
 {
@@ -91,10 +92,10 @@ namespace PhotoAPI.Controllers
             var emailConfirmationResult = await _userManager.ConfirmEmailAsync(user, token);
             if (!emailConfirmationResult.Succeeded)
             {
-                return new RedirectResult("http://localhost.com:63627/registration.html");
+                return new RedirectResult("http://localhost.com:4200/Account/Login");
             }
 
-            return new RedirectResult("http://localhost.com:63627/"); 
+            return new RedirectResult("http://localhost.com:4200/"); 
         }
 
         [HttpGet]
@@ -106,14 +107,14 @@ namespace PhotoAPI.Controllers
 
         [HttpPost]
         [Route("login")]
-        public async Task<IActionResult> Login(string email, string password)
+        public async Task<IActionResult> Login(LoginModel model)
         {
-            if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+            if (string.IsNullOrWhiteSpace(model.Email) || string.IsNullOrWhiteSpace(model.Password))
             {
                 return StatusCode(400, Json(new { Message = "email or password is null" }));
             }
 
-            var user = await _userManager.FindByEmailAsync(email);
+            var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)
             {
                 return StatusCode(400, Json(new { Message = "Invalid Login and/or password" }));
@@ -124,7 +125,7 @@ namespace PhotoAPI.Controllers
                 return StatusCode(400, Json(new { Message = "Email not confirmed, please check your email for confirmation link" }));
             }
 
-            var passwordSignInResult = await _signInManager.PasswordSignInAsync(user, password, isPersistent: true, lockoutOnFailure: false);
+            var passwordSignInResult = await _signInManager.PasswordSignInAsync(user, model.Password, isPersistent: true, lockoutOnFailure: false);
             if (!passwordSignInResult.Succeeded)
             {
                 return StatusCode(400, Json(new { Message = "Invalid Login and/or password" }));
