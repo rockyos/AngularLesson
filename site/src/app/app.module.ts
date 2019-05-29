@@ -8,12 +8,16 @@ import { HttpService } from './http.service';
 import { HttpClientModule} from "@angular/common/http";
 import { FormComponent } from './form/form.component';
 import { FormsModule }   from '@angular/forms';
+import { IndexComponent } from './index/index.component';
+import { LoginComponent } from './login/login.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     MainComponent,
-    FormComponent
+    FormComponent,
+    IndexComponent,
+    LoginComponent
   ],
   imports: [
     BrowserModule,
