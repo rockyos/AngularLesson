@@ -4,6 +4,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -11,8 +12,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace PhotoAPI.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
+    [Route("[controller]")]
+    [AllowAnonymous]
     public class AccountController : Controller
     {
         private readonly UserManager<IdentityUser> _userManager;
@@ -96,6 +97,12 @@ namespace PhotoAPI.Controllers
             return new RedirectResult("http://localhost.com:63627/"); 
         }
 
+        [HttpGet]
+        [Route("login")]
+        public IActionResult Login(string ReturnUrl = null)
+        {
+            return new RedirectResult("http://localhost:4200/Account/Login?ReturnUrl=" + ReturnUrl);
+        }
 
         [HttpPost]
         [Route("login")]

@@ -3,6 +3,7 @@ import { Photo } from './photo';
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment.prod';
+import { Login } from './login';
 
 @Injectable({
   providedIn: 'root'
@@ -11,19 +12,19 @@ export class HttpService {
   constructor(private http: HttpClient) { }
 
   public getPhotos(): Observable<Array<Photo>> {
-    const url = `${environment.apiUrl}photo`;
+    const url = `${environment.apiUrl}api/photo`;
     return this.http.get<Array<Photo>>(url);
   }
 
   public addPhoto(newImage: File): Observable<string> {
     const formData = new FormData();
     formData.append('newImage', newImage, newImage.name);
-    const url = `${environment.apiUrl}photo/send`;
+    const url = `${environment.apiUrl}api/photo/send`;
     return this.http.post<string>(url, formData);
   }
 
   public save(): Observable<any>{
-    const url = `${environment.apiUrl}photo/save`;
+    const url = `${environment.apiUrl}api/photo/save`;
     const httpOptions = {
       headers: new HttpHeaders({ 'Content-Type': 'application/json' })
     };
@@ -31,7 +32,7 @@ export class HttpService {
   }
 
   public reset(): Observable<any>{
-    const url = `${environment.apiUrl}photo/reset`;
+    const url = `${environment.apiUrl}api/photo/reset`;
     const httpOptions = {
       headers: new HttpHeaders({ 'Content-Type': 'application/json' })
     };
@@ -42,7 +43,17 @@ export class HttpService {
     const httpOptions = {
       headers: new HttpHeaders({ 'Content-Type': 'application/json' })
     };
-    const url = `${environment.apiUrl}photo/${photo.guid}`;
+    const url = `${environment.apiUrl}api/photo/${photo.guid}`;
     return this.http.delete(url);
+  }
+
+  public loginPost(email, password): Observable<string>{
+    console.log(email + " : " + password);
+    const url = `${environment.apiUrl}account/login`;
+    const httpOptions = {
+      headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+    };
+    const body = {email : email, password: password }
+    return this.http.post<string>(url, body, httpOptions);
   }
 }
