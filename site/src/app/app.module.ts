@@ -12,6 +12,8 @@ import { IndexComponent } from './index/index.component';
 import { LoginComponent } from './login/login.component';
 import { NotfoundComponent } from './notfound/notfound.component';
 import { ReactiveFormsModule }   from '@angular/forms';
+import { ConfirEmailComponent } from './confir-email/confir-email.component';
+import { RegisterComponent } from './register/register.component';
 
 @NgModule({
   declarations: [
@@ -20,7 +22,9 @@ import { ReactiveFormsModule }   from '@angular/forms';
     FormComponent,
     IndexComponent,
     LoginComponent,
-    NotfoundComponent
+    NotfoundComponent,
+    ConfirEmailComponent,
+    RegisterComponent
   ],
   imports: [
     BrowserModule,

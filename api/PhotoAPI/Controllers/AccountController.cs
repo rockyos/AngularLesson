@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Net;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -21,6 +23,9 @@ namespace PhotoAPI.Controllers
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly IEmailSender _messageService;
 
+        public IList<AuthenticationScheme> ExternalLogins { get; set; }
+        public readonly string angularURL = "http://localhost:4200";
+
         public AccountController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager,
         IEmailSender messageService)
         {
@@ -29,109 +34,92 @@ namespace PhotoAPI.Controllers
             _messageService = messageService;
         }
 
-        [HttpPost]
-        //[Produces("application/json")]
-        [Route("register")]
-        public async Task<IActionResult> Register(string email, string password, string confirmPassword)
+        [HttpGet]
+        [Route("Register")]
+        public IActionResult Register(string returnUrl = null)
         {
-            if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
-            {
-                return StatusCode(400, Json(new { Message = "Email and/or password field is empty"}));
-            }
-
-            if (password != confirmPassword)
-            {
-                return StatusCode(400, Json(new { Message = "Passwords don't match!" }));
-            }
-
-            var newUser = new IdentityUser
-            {
-                UserName = email,
-                Email = email
-            };
-
-            IdentityResult userCreationResult = null;
-            try
-            {
-                userCreationResult = await _userManager.CreateAsync(newUser, password);
-            }
-            catch (SqlException)
-            {
-                return StatusCode(500, Json(new { Message = "Error communicating with the database, see logs for more details" }));
-            }
-
-            if (!userCreationResult.Succeeded)
-            {
-                return StatusCode(400, Json(new
-                {
-                    Message = "An error occurred when creating the user, see nested errors",
-                    Errors = userCreationResult.Errors.Select(x =>  new { Message = $"[{x.Code}] {x.Description}" })
-                }));
-            }
-
-            var emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
-            var tokenVerificationUrl = Url.Action("VerifyEmail", "Account", new
-                {
-                    Id = newUser.Id,
-                    token = emailConfirmationToken
-                }, Request.Scheme);
-
-            await _messageService.SendEmailAsync(email,
-                "Verify your email", $"Click <a href=\"{tokenVerificationUrl}\">here</a> to verify your email");
-
-            return StatusCode(200, Json(new { Message = $"Registration completed, please verify your email - {email}" }));
+            return new RedirectResult("http://localhost:4200/Account/Register?ReturnUrl=" + returnUrl);
         }
 
 
-        public async Task<IActionResult> VerifyEmail(string id, string token)
+        [HttpPost]
+        [Route("Register")]
+        public async Task<IActionResult> Register(RegisterModel model)
         {
-            var user = await _userManager.FindByIdAsync(id);
-            if (user == null)
-                throw new InvalidOperationException();
-
-            var emailConfirmationResult = await _userManager.ConfirmEmailAsync(user, token);
-            if (!emailConfirmationResult.Succeeded)
+            if (ModelState.IsValid)
             {
-                return new RedirectResult("http://localhost.com:4200/Account/Login");
-            }
+                var user = new IdentityUser { UserName = model.Email, Email = model.Email };
+                var result = await _userManager.CreateAsync(user, model.Password);
+                if (result.Succeeded)
+                {
+                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code });
+                    callbackUrl = $"http://localhost:63627{callbackUrl}";
 
-            return new RedirectResult("http://localhost.com:4200/"); 
+                    await _messageService.SendEmailAsync(model.Email, "Confirm your email",
+                      $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+
+                    await _signInManager.SignInAsync(user, isPersistent: false);
+                    return LocalRedirect(angularURL);
+                }
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description); /// json send!!!
+                }
+            }
+            return LocalRedirect(angularURL);
         }
 
         [HttpGet]
-        [Route("login")]
-        public IActionResult Login(string ReturnUrl = null)
+        public async Task<IActionResult> ConfirmEmail(string userId, string code)
         {
+            if (userId == null || code == null)
+            {
+                return LocalRedirect(angularURL);
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound($"Unable to load user with ID '{userId}'.");
+               // throw new InvalidOperationException();
+            }
+
+            var result = await _userManager.ConfirmEmailAsync(user, code);
+            if (!result.Succeeded)
+            {
+                throw new InvalidOperationException($"Error confirming email for user with ID '{userId}':");
+                //return new RedirectResult(angularURL + "/Account/Login");
+            }
+
+            return LocalRedirect(angularURL + "/Account/Confirm"); //page confirm redirect
+        }
+
+        [HttpGet]
+        [Route("Login")]
+        public async Task<IActionResult> Login(string ReturnUrl = null)
+        {
+            await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
+            ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             return new RedirectResult("http://localhost:4200/Account/Login?ReturnUrl=" + ReturnUrl);
         }
 
         [HttpPost]
-        [Route("login")]
+        [Route("Login")]
         public async Task<IActionResult> Login(LoginModel model)
         {
-            if (string.IsNullOrWhiteSpace(model.Email) || string.IsNullOrWhiteSpace(model.Password))
+            if (ModelState.IsValid)
             {
-                return StatusCode(400, Json(new { Message = "email or password is null" }));
+                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: true);
+                if (result.Succeeded)
+                {
+                    return new RedirectResult(angularURL + model.ReturnUrl);
+                } else
+                {
+                    return StatusCode(400, Json(new { Message = "Invalid login attempt." }));
+                }
             }
-
-            var user = await _userManager.FindByEmailAsync(model.Email);
-            if (user == null)
-            {
-                return StatusCode(400, Json(new { Message = "Invalid Login and/or password" }));
-            }
-
-            if (!user.EmailConfirmed)
-            {
-                return StatusCode(400, Json(new { Message = "Email not confirmed, please check your email for confirmation link" }));
-            }
-
-            var passwordSignInResult = await _signInManager.PasswordSignInAsync(user, model.Password, isPersistent: true, lockoutOnFailure: false);
-            if (!passwordSignInResult.Succeeded)
-            {
-                return StatusCode(400, Json(new { Message = "Invalid Login and/or password" }));
-            }
-
-            return StatusCode(200);
+            return new RedirectResult(angularURL + model.ReturnUrl);
         }
 
         [HttpPost]
@@ -139,7 +127,7 @@ namespace PhotoAPI.Controllers
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();
-            return StatusCode(200, Json(new { Message = "You have been successfully logged out" }));
+            return new RedirectResult(angularURL);
         }
 
     }
