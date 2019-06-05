@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using PhotoAPI.Models.Identity;
 
 namespace PhotoAPI.Controllers
@@ -36,9 +37,9 @@ namespace PhotoAPI.Controllers
 
         [HttpGet]
         [Route("Register")]
-        public IActionResult Register(string returnUrl = null)
+        public IActionResult Register()
         {
-            return new RedirectResult("http://localhost:4200/Account/Register?ReturnUrl=" + returnUrl);
+            return new RedirectResult(angularURL + "/Account/Register");
         }
 
 
@@ -60,14 +61,15 @@ namespace PhotoAPI.Controllers
                       $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
 
                     await _signInManager.SignInAsync(user, isPersistent: false);
-                    return LocalRedirect(angularURL);
+                    return new RedirectResult(angularURL);
                 }
                 foreach (var error in result.Errors)
                 {
-                    ModelState.AddModelError(string.Empty, error.Description); /// json send!!!
+                    ModelState.AddModelError(string.Empty, error.Description); 
                 }
             }
-            return LocalRedirect(angularURL);
+            string messages = string.Join("; ", ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage));
+            return StatusCode(200, Json(new { Message = messages }));
         }
 
         [HttpGet]
@@ -75,24 +77,21 @@ namespace PhotoAPI.Controllers
         {
             if (userId == null || code == null)
             {
-                return LocalRedirect(angularURL);
+                return new RedirectResult(angularURL);
             }
 
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
                 return NotFound($"Unable to load user with ID '{userId}'.");
-               // throw new InvalidOperationException();
             }
 
             var result = await _userManager.ConfirmEmailAsync(user, code);
             if (!result.Succeeded)
             {
                 throw new InvalidOperationException($"Error confirming email for user with ID '{userId}':");
-                //return new RedirectResult(angularURL + "/Account/Login");
             }
-
-            return LocalRedirect(angularURL + "/Account/Confirm"); //page confirm redirect
+            return new RedirectResult(angularURL + "/Account/Confirm"); 
         }
 
         [HttpGet]
@@ -101,7 +100,7 @@ namespace PhotoAPI.Controllers
         {
             await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
-            return new RedirectResult("http://localhost:4200/Account/Login?ReturnUrl=" + ReturnUrl);
+            return new RedirectResult(angularURL+ "/Account/Login?ReturnUrl=" + ReturnUrl);
         }
 
         [HttpPost]
@@ -116,10 +115,12 @@ namespace PhotoAPI.Controllers
                     return new RedirectResult(angularURL + model.ReturnUrl);
                 } else
                 {
-                    return StatusCode(400, Json(new { Message = "Invalid login attempt." }));
+                    return StatusCode(200, Json(new { Message = "Invalid login attempt." }));
                 }
-            }
-            return new RedirectResult(angularURL + model.ReturnUrl);
+            } 
+            string messages = string.Join("; ", ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage));
+            return StatusCode(200, Json(new { Message = messages }));
+
         }
 
         [HttpPost]

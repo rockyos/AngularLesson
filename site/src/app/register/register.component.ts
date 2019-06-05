@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpService } from '../http.service';
-import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { FormGroup, Validators, FormBuilder } from '@angular/forms';
+import { PasswordValidation } from '../pass-validation';
+
 
 @Component({
   selector: 'app-register',
@@ -8,22 +10,23 @@ import { FormGroup, FormControl, Validators } from '@angular/forms';
   styleUrls: ['./register.component.css']
 })
 export class RegisterComponent implements OnInit {
+  errorMessage: string;
+  registerForm: FormGroup;
 
-  constructor(private service: HttpService) {
-
-   }
-  registerForm: FormGroup = new FormGroup(
-    {
-      "registerEmail": new FormControl("", [Validators.required, Validators.pattern("[a-zA-Z_]+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}")]),
-      "registerPass": new FormControl("", Validators.required),
-      "registerPassConfirm": new FormControl("", Validators.required)
-    }
-  );
+  constructor(private service: HttpService, private fb: FormBuilder) {
+    this.registerForm = this.fb.group({
+      registerEmail: ["", [Validators.required, Validators.email]],
+      registerPass: ["", Validators.required],
+      registerPassConfirm: ["", Validators.required]
+    }, { validator: PasswordValidation });
+  }
 
   ngOnInit() {
   }
 
-  registerSend(email: string, password: string, confirmpassword: string){
-    this.service.registerPost(email, password, confirmpassword).subscribe();
+  registerSend(email: string, password: string, confirmpassword: string) {
+    this.service.registerPost(email, password, confirmpassword).subscribe(resualt => {
+      this.errorMessage =  resualt['value']['message']
+    });
   }
 }

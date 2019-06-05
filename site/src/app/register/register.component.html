@@ -1,15 +1,18 @@
 <h2>Register</h2>
 <h4>Create a new account.</h4>
 <hr />
-<div class="col-md-6">
+<div class="col-md-5">
   <form [formGroup]="registerForm" novalidate (ngSubmit)="registerSend(registerForm.controls['registerEmail'].value, registerForm.controls['registerPass'].value,
   registerForm.controls['registerPassConfirm'].value)">
     <div class="form-group">
+      <div class="alert alert-danger" *ngIf="errorMessage">
+        {{errorMessage}}
+      </div>
       <label>Email</label>
       <input class="form-control" name="email" formControlName="registerEmail" />
       <div class="alert alert-danger"
         *ngIf="registerForm.controls['registerEmail'].invalid && registerForm.controls['registerEmail'].touched">
-        Не правильный формат
+        Wrong format!
       </div>
     </div>
     <div class="form-group">
@@ -17,7 +20,7 @@
       <input class="form-control" type="password" name="password" formControlName="registerPass" />
       <div class="alert alert-danger"
         *ngIf="registerForm.controls['registerPass'].invalid && registerForm.controls['registerPass'].touched">
-        Не указан пароль
+        Password field must not be empty!
       </div>
     </div>
     <div class="form-group">
@@ -25,7 +28,7 @@
       <input class="form-control" type="password" name="password" formControlName="registerPassConfirm" />
       <div class="alert alert-danger"
         *ngIf="registerForm.controls['registerPassConfirm'].invalid && registerForm.controls['registerPassConfirm'].touched">
-        Пароли не совпадают
+        Confirm password field don`t match with password field or empty!
       </div>
     </div>
     <div class="form-group">

@@ -24,7 +24,7 @@ import { RegisterComponent } from './register/register.component';
     LoginComponent,
     NotfoundComponent,
     ConfirEmailComponent,
-    RegisterComponent
+    RegisterComponent,
   ],
   imports: [
     BrowserModule,

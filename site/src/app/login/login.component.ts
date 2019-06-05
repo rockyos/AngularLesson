@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { FormGroup, FormControl, Validators, FormBuilder } from '@angular/forms';
 import { HttpService } from '../http.service';
 import { ActivatedRoute } from '@angular/router';
 import { environment } from 'src/environments/environment.prod';
@@ -10,25 +10,26 @@ import { environment } from 'src/environments/environment.prod';
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent implements OnInit {
-
+  errorMessage: string;
   returnUrl: string;
   url = `${environment.apiUrl}`;
-  loginForm: FormGroup = new FormGroup(
-    {
-      "userEmail": new FormControl("", [Validators.required, Validators.pattern("[a-zA-Z_]+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}")]),
-      "userPassword": new FormControl("", Validators.required),
-      "userCheckbox": new FormControl()
-    }
-  );
-  constructor(private service: HttpService, private activateRoute: ActivatedRoute) {
+  loginForm: FormGroup;
+
+  constructor(private service: HttpService, private activateRoute: ActivatedRoute, private fb: FormBuilder) {
     this.returnUrl = this.activateRoute.snapshot.queryParamMap.get("ReturnUrl");
+    this.loginForm = this.fb.group({
+      userEmail: ["", [Validators.required, Validators.email]],
+      userPassword: ["", Validators.required],
+      userCheckbox: [false]
+    })
   }
 
   ngOnInit() {
-
   }
 
-  loginSend(email: string, pass: string, checked: any) {
-    this.service.loginPost(email, pass, checked, this.returnUrl).subscribe();
+  loginSend(email: string, pass: string, rememberMe: boolean) {
+    this.service.loginPost(email, pass, rememberMe, this.returnUrl).subscribe(resualt => {
+      this.errorMessage =  resualt['value']['message']
+    });
   }
 }

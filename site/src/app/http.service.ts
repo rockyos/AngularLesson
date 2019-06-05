@@ -47,13 +47,12 @@ export class HttpService {
     return this.http.delete(url);
   }
 
-  public loginPost(email, password, checked, returnUrl): Observable<string>{
-    //console.log(email + " : " + password);
+  public loginPost(email, password, rememberMe, returnUrl): Observable<string>{
     const url = `${environment.apiUrl}Account/Login`;
     const formData = new FormData();
     formData.append('Email', email);
     formData.append('Password', password);
-    formData.append('RememberMe', checked);
+    formData.append('RememberMe', rememberMe);
     formData.append('ReturnUrl', returnUrl);
     return this.http.post<string>(url, formData);
   }
