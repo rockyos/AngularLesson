@@ -15,7 +15,7 @@ namespace PhotoAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    //[Authorize]
     public class PhotoController : ControllerBase
     {
         private readonly string _sessionkey = "photos";

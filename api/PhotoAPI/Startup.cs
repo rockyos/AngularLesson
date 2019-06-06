@@ -93,7 +93,7 @@ namespace PhotoAPI
             {
                 app.UseHsts();
             }
-
+            app.UseMyCookie();
             app.UseSession();
             app.UseHttpsRedirection();
             app.UseStaticFiles();

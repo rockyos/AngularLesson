@@ -10,7 +10,7 @@ import { environment } from 'src/environments/environment.prod';
 })
 export class MainComponent implements OnInit {
   @Input() photos: Photo[];
-  url = `${environment.apiUrl}photo`;
+  url = `${environment.apiUrl}api/photo`;
 
   constructor(private service: HttpService) { }
 
