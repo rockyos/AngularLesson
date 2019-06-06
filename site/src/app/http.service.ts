@@ -57,12 +57,29 @@ export class HttpService {
     return this.http.post<string>(url, formData);
   }
 
-  public registerPost(email, password, confirmpassword) : Observable<string>{
+  public registerPost(email, pass, passconfirm) : Observable<string>{
      const url = `${environment.apiUrl}Account/Register`;
      const formData = new FormData();
      formData.append('Email', email);
-     formData.append('Password', password);
-     formData.append('ConfirmPassword', confirmpassword);
+     formData.append('Password', pass);
+     formData.append('ConfirmPassword', passconfirm);
      return this.http.post<string>(url, formData);
   }
+
+  public forgotPassPost(email) : Observable<string>{
+    const url = `${environment.apiUrl}Account/ForgotPassword`;
+    const formData = new FormData();
+    formData.append('Email', email);
+    return this.http.post<string>(url, formData);
+ }
+
+ public resetPassPost(email, pass, passconfirm, code) : Observable<string>{
+  const url = `${environment.apiUrl}Account/ResetPassword`;
+  const formData = new FormData();
+  formData.append('Email', email);
+  formData.append('Password', pass);
+  formData.append('ConfirmPassword', passconfirm);
+  formData.append('Code', code);
+  return this.http.post<string>(url, formData);
+}
 }

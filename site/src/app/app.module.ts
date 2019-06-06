@@ -14,6 +14,10 @@ import { NotfoundComponent } from './notfound/notfound.component';
 import { ReactiveFormsModule }   from '@angular/forms';
 import { ConfirEmailComponent } from './confir-email/confir-email.component';
 import { RegisterComponent } from './register/register.component';
+import { ForgotpassComponent } from './forgotpass/forgotpass.component';
+import { ForgotpassconfirmComponent } from './forgotpassconfirm/forgotpassconfirm.component';
+import { ResetpasswordComponent } from './resetpassword/resetpassword.component';
+import { ResetpassconfirmComponent } from './resetpassconfirm/resetpassconfirm.component';
 
 @NgModule({
   declarations: [
@@ -25,6 +29,10 @@ import { RegisterComponent } from './register/register.component';
     NotfoundComponent,
     ConfirEmailComponent,
     RegisterComponent,
+    ForgotpassComponent,
+    ForgotpassconfirmComponent,
+    ResetpasswordComponent,
+    ResetpassconfirmComponent,
   ],
   imports: [
     BrowserModule,

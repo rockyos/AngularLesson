@@ -4,6 +4,7 @@ import { FormGroup, Validators, FormBuilder } from '@angular/forms';
 import { PasswordValidation } from '../pass-validation';
 
 
+
 @Component({
   selector: 'app-register',
   templateUrl: './register.component.html',
@@ -24,8 +25,8 @@ export class RegisterComponent implements OnInit {
   ngOnInit() {
   }
 
-  registerSend(email: string, password: string, confirmpassword: string) {
-    this.service.registerPost(email, password, confirmpassword).subscribe(resualt => {
+  registerSend(email: string, pass: string, passconfirm: string) {
+    this.service.registerPost(email, pass, passconfirm).subscribe(resualt => {
       this.errorMessage =  resualt['value']['message']
     });
   }

@@ -3,7 +3,7 @@
 
 namespace PhotoAPI.Models.Identity
 {
-    public class RegisterModel
+    public class ResetPasswordModel
     {
         [Required]
         [EmailAddress]
@@ -19,6 +19,6 @@ namespace PhotoAPI.Models.Identity
         [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; }
 
-        //public string ReturnUrl { get; set; }
+        public string Code { get; set; }
     }
 }

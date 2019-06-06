@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using System.Web;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -68,7 +69,7 @@ namespace PhotoAPI.Controllers
                     ModelState.AddModelError(string.Empty, error.Description); 
                 }
             }
-            string messages = string.Join("; ", ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage));
+            string messages = string.Join(" ", ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage));
             return StatusCode(200, Json(new { Message = messages }));
         }
 
@@ -93,6 +94,82 @@ namespace PhotoAPI.Controllers
             }
             return new RedirectResult(angularURL + "/Account/Confirm"); 
         }
+
+        [HttpGet]
+        [Route("ForgotPassword")]
+        public IActionResult ForgotPassword()
+        {
+            return new RedirectResult(angularURL + "/Account/ForgotPassword");
+        }
+
+        [HttpPost]
+        [Route("ForgotPassword")]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await _userManager.FindByEmailAsync(model.Email);
+                if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
+                {
+                    return new RedirectResult(angularURL + "/Account/ForgotPasswordConfirmation");
+                }
+
+                var code = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+                var callbackUrl = Url.Action("ResetPassword", "Account", new { userId = user.Id, code = code });
+                callbackUrl = $"http://localhost:63627{callbackUrl}";
+
+                await _messageService.SendEmailAsync(
+                    model.Email,
+                    "Reset Password",
+                    $"Please reset your password by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+
+                return new RedirectResult(angularURL + "/Account/ForgotPasswordConfirmation");
+            }
+            string messages = string.Join("; ", ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage));
+            return StatusCode(200, Json(new { Message = messages }));
+        }
+
+        [HttpGet]
+        [Route("ResetPassword")]
+        public IActionResult ResetPassword(string code = null)
+        {
+            new RedirectResult(angularURL + "/Account/ResetPassword");
+            return Json(new { Code = code });
+        }
+
+        [HttpPost]
+        [Route("ResetPassword")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                string messages = string.Join("; ", ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage));
+                return StatusCode(200, Json(new { Message = messages }));
+            }
+
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                return new RedirectResult(angularURL + "Account/ResetPasswordConfirmation");
+            }
+
+            var result = await _userManager.ResetPasswordAsync(user, model.Code, model.Password);
+            if (result.Succeeded)
+            {
+                return new RedirectResult(angularURL + "Account/ResetPasswordConfirmation");
+            }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+
+            string errmessages = string.Join("; ", ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage));
+            return StatusCode(200, Json(new { Message = errmessages }));
+
+        }
+
 
         [HttpGet]
         [Route("Login")]
