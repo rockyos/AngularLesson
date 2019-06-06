@@ -1,8 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpService } from '../http.service';
 import { FormGroup, Validators, FormBuilder } from '@angular/forms';
-import { PasswordValidation } from '../pass-validation';
-
 
 
 @Component({
@@ -16,10 +14,10 @@ export class RegisterComponent implements OnInit {
 
   constructor(private service: HttpService, private fb: FormBuilder) {
     this.registerForm = this.fb.group({
-      registerEmail: ["", [Validators.required, Validators.email]],
+      registerEmail: ["", Validators.required, Validators.email],
       registerPass: ["", Validators.required],
       registerPassConfirm: ["", Validators.required]
-    }, { validator: PasswordValidation });
+    });
   }
 
   ngOnInit() {

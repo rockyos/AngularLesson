@@ -134,8 +134,7 @@ namespace PhotoAPI.Controllers
         [Route("ResetPassword")]
         public IActionResult ResetPassword(string code = null)
         {
-            new RedirectResult(angularURL + "/Account/ResetPassword");
-            return Json(new { Code = code });
+            return new RedirectResult(angularURL + "/Account/ResetPassword?code=" + code);
         }
 
         [HttpPost]
