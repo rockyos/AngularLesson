@@ -48,22 +48,28 @@ export class HttpService {
   }
 
   public loginPost(email, password, rememberMe, returnUrl): Observable<string>{
+    const httpOptions = { 
+      responseType: 'text' as 'json' 
+     };
     const url = `${environment.apiUrl}Account/Login`;
     const formData = new FormData();
     formData.append('Email', email);
     formData.append('Password', password);
     formData.append('RememberMe', rememberMe);
     formData.append('ReturnUrl', returnUrl);
-    return this.http.post<string>(url, formData);
+    return this.http.post<string>(url, formData, httpOptions);
   }
 
   public registerPost(email, pass, passconfirm) : Observable<string>{
+     const httpOptions = { 
+       responseType: 'text' as 'json' 
+      };
      const url = `${environment.apiUrl}Account/Register`;
      const formData = new FormData();
      formData.append('Email', email);
      formData.append('Password', pass);
      formData.append('ConfirmPassword', passconfirm);
-     return this.http.post<string>(url, formData);
+     return this.http.post<string>(url, formData, httpOptions);
   }
 
   public forgotPassPost(email) : Observable<string>{

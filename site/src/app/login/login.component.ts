@@ -13,7 +13,9 @@ export class LoginComponent implements OnInit {
   errorMessage: string;
   returnUrl: string;
   url = `${environment.apiUrl}`;
+  clientUrl = `${environment.clientUrl}`;
   loginForm: FormGroup;
+  jwt: string;
 
   constructor(private service: HttpService, private activateRoute: ActivatedRoute, private fb: FormBuilder) {
     this.returnUrl = this.activateRoute.snapshot.queryParamMap.get("ReturnUrl");
@@ -28,7 +30,8 @@ export class LoginComponent implements OnInit {
   }
 
   loginSend(email: string, pass: string, rememberMe: boolean) {
-    this.service.loginPost(email, pass, rememberMe, this.returnUrl).subscribe(resualt => {}, 
-      error => this.errorMessage =  error['error']['value']['message']);
+    this.service.loginPost(email, pass, rememberMe, this.returnUrl).subscribe(resualt => {
+      this.jwt = resualt, localStorage.setItem('jwt', this.jwt)},
+      error => this.errorMessage = error['error']);
   }
 }

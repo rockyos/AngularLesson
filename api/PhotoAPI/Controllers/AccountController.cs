@@ -44,12 +44,12 @@ namespace PhotoAPI.Controllers
             _configuration = configuration;
         }
 
-        [HttpGet]
-        [Route("Register")]
-        public IActionResult Register()
-        {
-            return new RedirectResult(angularURL + "/Account/Register");
-        }
+        //[HttpGet]
+        //[Route("Register")]
+        //public IActionResult Register()
+        //{
+        //    return new RedirectResult(angularURL + "/Account/Register");
+        //}
 
 
         [HttpPost]
@@ -71,7 +71,6 @@ namespace PhotoAPI.Controllers
 
                     await _signInManager.SignInAsync(user, isPersistent: false);
                     return await GenerateJwtToken(model.Email, user);
-                    //return new RedirectResult(angularURL);
                 }
                 foreach (var error in result.Errors)
                 {
@@ -79,7 +78,7 @@ namespace PhotoAPI.Controllers
                 }
             }
             string messages = string.Join(" ", ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage));
-            return StatusCode(400, Json(new { Message = messages }));
+            return StatusCode(401, messages);
         }
 
         [HttpGet]
@@ -104,12 +103,12 @@ namespace PhotoAPI.Controllers
             return new RedirectResult(angularURL + "/Account/Confirm"); 
         }
 
-        [HttpGet]
-        [Route("ForgotPassword")]
-        public IActionResult ForgotPassword()
-        {
-            return new RedirectResult(angularURL + "/Account/ForgotPassword");
-        }
+        //[HttpGet]
+        //[Route("ForgotPassword")]
+        //public IActionResult ForgotPassword()
+        //{
+        //    return new RedirectResult(angularURL + "/Account/ForgotPassword");
+        //}
 
         [HttpPost]
         [Route("ForgotPassword")]
@@ -203,11 +202,11 @@ namespace PhotoAPI.Controllers
                     //return new RedirectResult(angularURL + model.ReturnUrl);
                 } else
                 {
-                    return StatusCode(401, Json(new { Message = "Invalid login attempt." }));
+                    return StatusCode(401, "Invalid login attempt.");
                 }
             } 
             string messages = string.Join("; ", ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage));
-            return StatusCode(401, Json(new { Message = messages }));
+            return StatusCode(401, messages);
 
         }
 
