@@ -11,6 +11,7 @@ import { FormGroup, Validators, FormBuilder } from '@angular/forms';
 export class RegisterComponent implements OnInit {
   errorMessage: string;
   registerForm: FormGroup;
+  jwt: any;
 
   constructor(private service: HttpService, private fb: FormBuilder) {
     this.registerForm = this.fb.group({
@@ -24,8 +25,7 @@ export class RegisterComponent implements OnInit {
   }
 
   registerSend(email: string, pass: string, passconfirm: string) {
-    this.service.registerPost(email, pass, passconfirm).subscribe(resualt => {
-      this.errorMessage =  resualt['value']['message']
-    });
+    this.service.registerPost(email, pass, passconfirm).subscribe(resualt => {this.jwt = resualt, console.log(this.jwt)},
+     error => this.errorMessage =  error['error']['value']['message']);
   }
 }

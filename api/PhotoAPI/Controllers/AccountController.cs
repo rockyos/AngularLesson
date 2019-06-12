@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net;
 using System.Security.Claims;
+using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using System.Web;
@@ -15,6 +17,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using PhotoAPI.Models.Identity;
 
 namespace PhotoAPI.Controllers
@@ -25,17 +29,19 @@ namespace PhotoAPI.Controllers
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly IConfiguration _configuration;
         private readonly IEmailSender _messageService;
 
         public IList<AuthenticationScheme> ExternalLogins { get; set; }
         public readonly string angularURL = "http://localhost:4200";
 
         public AccountController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager,
-        IEmailSender messageService)
+        IEmailSender messageService, IConfiguration configuration)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _messageService = messageService;
+            _configuration = configuration;
         }
 
         [HttpGet]
@@ -48,7 +54,7 @@ namespace PhotoAPI.Controllers
 
         [HttpPost]
         [Route("Register")]
-        public async Task<IActionResult> Register(RegisterModel model)
+        public async Task<object> Register(RegisterModel model)
         {
             if (ModelState.IsValid)
             {
@@ -64,7 +70,8 @@ namespace PhotoAPI.Controllers
                       $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
 
                     await _signInManager.SignInAsync(user, isPersistent: false);
-                    return new RedirectResult(angularURL);
+                    return await GenerateJwtToken(model.Email, user);
+                    //return new RedirectResult(angularURL);
                 }
                 foreach (var error in result.Errors)
                 {
@@ -72,7 +79,7 @@ namespace PhotoAPI.Controllers
                 }
             }
             string messages = string.Join(" ", ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage));
-            return StatusCode(200, Json(new { Message = messages }));
+            return StatusCode(400, Json(new { Message = messages }));
         }
 
         [HttpGet]
@@ -183,21 +190,24 @@ namespace PhotoAPI.Controllers
 
         [HttpPost]
         [Route("Login")]
-        public async Task<IActionResult> Login(LoginModel model)
+        public async Task<object> Login(LoginModel model)
         {
             if (ModelState.IsValid)
             {
                 var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: true);
                 if (result.Succeeded)
                 {
-                    return new RedirectResult(angularURL + model.ReturnUrl);
+                    var user = await _userManager.FindByEmailAsync(model.Email);
+                    //var appUser = _userManager.Users.SingleOrDefault(r => r.Email == model.Email);
+                    return await GenerateJwtToken(model.Email, user);
+                    //return new RedirectResult(angularURL + model.ReturnUrl);
                 } else
                 {
-                    return StatusCode(200, Json(new { Message = "Invalid login attempt." }));
+                    return StatusCode(401, Json(new { Message = "Invalid login attempt." }));
                 }
             } 
             string messages = string.Join("; ", ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage));
-            return StatusCode(200, Json(new { Message = messages }));
+            return StatusCode(401, Json(new { Message = messages }));
 
         }
 
@@ -207,6 +217,30 @@ namespace PhotoAPI.Controllers
         {
             await _signInManager.SignOutAsync();
             return new RedirectResult(angularURL);
+        }
+
+        private async Task<object> GenerateJwtToken(string email, IdentityUser user)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, email),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(ClaimTypes.NameIdentifier, user.Id)
+            };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtKey"]));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var expires = DateTime.Now.AddDays(Convert.ToDouble(_configuration["JwtExpireDays"]));
+
+            var token = new JwtSecurityToken(
+                _configuration["JwtIssuer"],
+                _configuration["JwtIssuer"],
+                claims,
+                expires: expires,
+                signingCredentials: creds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
     }

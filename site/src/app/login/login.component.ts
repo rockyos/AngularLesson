@@ -28,8 +28,7 @@ export class LoginComponent implements OnInit {
   }
 
   loginSend(email: string, pass: string, rememberMe: boolean) {
-    this.service.loginPost(email, pass, rememberMe, this.returnUrl).subscribe(resualt => {
-      this.errorMessage =  resualt['value']['message']
-    });
+    this.service.loginPost(email, pass, rememberMe, this.returnUrl).subscribe(resualt => {}, 
+      error => this.errorMessage =  error['error']['value']['message']);
   }
 }
