@@ -10,7 +10,6 @@ import { FormComponent } from './form/form.component';
 import { FormsModule }   from '@angular/forms';
 import { IndexComponent } from './index/index.component';
 import { LoginComponent } from './login/login.component';
-import { NotfoundComponent } from './notfound/notfound.component';
 import { ReactiveFormsModule }   from '@angular/forms';
 import { ConfirEmailComponent } from './confir-email/confir-email.component';
 import { RegisterComponent } from './register/register.component';
@@ -19,6 +18,7 @@ import { ForgotpassconfirmComponent } from './forgotpassconfirm/forgotpassconfir
 import { ResetpasswordComponent } from './resetpassword/resetpassword.component';
 import { ResetpassconfirmComponent } from './resetpassconfirm/resetpassconfirm.component';
 import { HttpConfigInterceptor } from './http.config.interceptor';
+import { AuthGuard } from './guard.services';
 
 @NgModule({
   declarations: [
@@ -27,13 +27,12 @@ import { HttpConfigInterceptor } from './http.config.interceptor';
     FormComponent,
     IndexComponent,
     LoginComponent,
-    NotfoundComponent,
     ConfirEmailComponent,
     RegisterComponent,
     ForgotpassComponent,
     ForgotpassconfirmComponent,
     ResetpasswordComponent,
-    ResetpassconfirmComponent,
+    ResetpassconfirmComponent
   ],
   imports: [
     BrowserModule,
@@ -42,7 +41,7 @@ import { HttpConfigInterceptor } from './http.config.interceptor';
     FormsModule,
     ReactiveFormsModule
   ],
-  providers: [HttpService, {provide: HTTP_INTERCEPTORS, useClass: HttpConfigInterceptor, multi: true}],
+  providers: [HttpService, AuthGuard, {provide: HTTP_INTERCEPTORS, useClass: HttpConfigInterceptor, multi: true}],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

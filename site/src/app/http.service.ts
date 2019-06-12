@@ -15,6 +15,11 @@ export class HttpService {
     return this.http.get<Array<Photo>>(url);
   }
 
+  public getImagesBySize(url: string): Observable<any> {
+  //  const url = `${environment.apiUrl}api/photo`;
+    return this.http.get<any>(url);
+  }
+
   public addPhoto(newImage: File): Observable<string> {
     const formData = new FormData();
     formData.append('newImage', newImage, newImage.name);
@@ -52,7 +57,7 @@ export class HttpService {
     return this.http.delete(url, httpOptions);
   }
 
-  public loginPost(email, password, rememberMe, returnUrl): Observable<string> {
+  public loginPost(email, password, rememberMe): Observable<string> {
     const httpOptions = {
       responseType: 'text' as 'json'
     };
@@ -61,7 +66,6 @@ export class HttpService {
     formData.append('Email', email);
     formData.append('Password', password);
     formData.append('RememberMe', rememberMe);
-    formData.append('ReturnUrl', returnUrl);
     return this.http.post<string>(url, formData, httpOptions);
   }
 
