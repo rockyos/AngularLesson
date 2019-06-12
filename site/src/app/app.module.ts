@@ -5,7 +5,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { MainComponent } from './main/main.component';
 import { HttpService } from './http.service';
-import { HttpClientModule} from "@angular/common/http";
+import { HttpClientModule, HTTP_INTERCEPTORS} from "@angular/common/http";
 import { FormComponent } from './form/form.component';
 import { FormsModule }   from '@angular/forms';
 import { IndexComponent } from './index/index.component';
@@ -18,6 +18,7 @@ import { ForgotpassComponent } from './forgotpass/forgotpass.component';
 import { ForgotpassconfirmComponent } from './forgotpassconfirm/forgotpassconfirm.component';
 import { ResetpasswordComponent } from './resetpassword/resetpassword.component';
 import { ResetpassconfirmComponent } from './resetpassconfirm/resetpassconfirm.component';
+import { HttpConfigInterceptor } from './http.config.interceptor';
 
 @NgModule({
   declarations: [
@@ -41,7 +42,7 @@ import { ResetpassconfirmComponent } from './resetpassconfirm/resetpassconfirm.c
     FormsModule,
     ReactiveFormsModule
   ],
-  providers: [HttpService],
+  providers: [HttpService, {provide: HTTP_INTERCEPTORS, useClass: HttpConfigInterceptor, multi: true}],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
