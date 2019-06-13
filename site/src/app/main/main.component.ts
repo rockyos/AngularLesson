@@ -27,12 +27,17 @@ export class MainComponent implements OnInit {
     this.service.getPhotos().subscribe(resualt => this.photos = resualt);
   }
 
-  btnLogOut(){
+  btnLogOut() {
     this.token.logOut();
   }
 
   deleteBtn(photo: Photo) {
     let index = this.photos.indexOf(photo);
     this.service.delPhoto(photo).subscribe(response => this.photos.splice(index, 1));
+  }
+
+  public getImagesBySize(itemId: string) {
+    const imageUrl = `${this.url}/${itemId}?width=320`;
+    return this.service.getImagesBySize(imageUrl);
   }
 }

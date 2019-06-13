@@ -9,7 +9,7 @@
     <tr *ngFor="let item of photos">
         <td>
             <a data-fancybox="gallery" href="{{url}}/{{item.guid}}">
-                <img class="img-thumbnail mx-auto d-block" src="{{url}}/{{item.guid}}?width=320" alt="Foto" />
+                <img class="img-thumbnail mx-auto d-block" src="getImageBySize(item.guid)" alt="Foto" />
             </a>
         </td>
         <td>{{item.photoName}}</td>
