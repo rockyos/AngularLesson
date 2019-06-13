@@ -2,7 +2,8 @@ import { Component, OnInit, Input } from '@angular/core';
 import { HttpService } from '../http.service';
 import { Photo } from '../photo';
 import { environment } from 'src/environments/environment.prod';
-import { DomSanitizer } from '@angular/platform-browser';
+import { Router } from '@angular/router';
+import * as jwt_decode from 'jwt-decode';
 
 @Component({
   selector: 'app-main',
@@ -12,23 +13,24 @@ import { DomSanitizer } from '@angular/platform-browser';
 export class MainComponent implements OnInit {
   @Input() photos: Photo[];
   url = `${environment.apiUrl}api/photo`;
+  username: string;
 
-  constructor(private service: HttpService, private sanitizer: DomSanitizer) { }
+  constructor(private service: HttpService, private router: Router) { }
 
   ngOnInit() {
     this.getData();
+    const token: string = localStorage.getItem('jwt');
+    var decoded = jwt_decode(token);
+    this.username = decoded['sub'];
   }
 
   getData() {
     this.service.getPhotos().subscribe(resualt => this.photos = resualt);
   }
 
-  public getSantizeUrl(url: string) {
-    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
-  }
-
-  getImagesBySize(url: string) {
-    this.service.getImagesBySize(url).subscribe(resualt => { return resualt });
+  btnLogOut(){
+    localStorage.removeItem('jwt');
+    this.router.navigate(['Account/Login']);
   }
 
   deleteBtn(photo: Photo) {

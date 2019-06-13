@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, Validators, FormBuilder } from '@angular/forms';
 import { HttpService } from '../http.service';
-import { ActivatedRoute } from '@angular/router';
+import { Router } from '@angular/router';
 import { environment } from 'src/environments/environment.prod';
+
 
 @Component({
   selector: 'app-login',
@@ -16,7 +17,7 @@ export class LoginComponent implements OnInit {
   loginForm: FormGroup;
   jwt: string;
 
-  constructor(private service: HttpService, private activateRoute: ActivatedRoute, private fb: FormBuilder) {
+  constructor(private service: HttpService, private router: Router, private fb: FormBuilder) {
     this.loginForm = this.fb.group({
       userEmail: ["", [Validators.required, Validators.email]],
       userPassword: ["", Validators.required],
@@ -25,11 +26,21 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.loggedOn();
+  }
+
+  loggedOn() {
+    const token: string = localStorage.getItem('jwt');
+    if (token) {
+      this.router.navigate(['']);
+    }
   }
 
   loginSend(email: string, pass: string, rememberMe: boolean) {
     this.service.loginPost(email, pass, rememberMe).subscribe(resualt => {
-      this.jwt = resualt, localStorage.setItem('jwt', this.jwt)},
-      error => this.errorMessage = error['error']);
+      this.jwt = resualt,
+        localStorage.setItem('jwt', this.jwt),
+        this.loggedOn()
+    }, error => this.errorMessage = error['error']);
   }
 }

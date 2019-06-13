@@ -1,22 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
-using System.Net;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using System.Web;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using PhotoAPI.Models.Identity;
@@ -43,13 +37,6 @@ namespace PhotoAPI.Controllers
             _messageService = messageService;
             _configuration = configuration;
         }
-
-        //[HttpGet]
-        //[Route("Register")]
-        //public IActionResult Register()
-        //{
-        //    return new RedirectResult(angularURL + "/Account/Register");
-        //}
 
 
         [HttpPost]
@@ -103,12 +90,6 @@ namespace PhotoAPI.Controllers
             return new RedirectResult(angularURL + "/Account/Confirm"); 
         }
 
-        //[HttpGet]
-        //[Route("ForgotPassword")]
-        //public IActionResult ForgotPassword()
-        //{
-        //    return new RedirectResult(angularURL + "/Account/ForgotPassword");
-        //}
 
         [HttpPost]
         [Route("ForgotPassword")]
@@ -178,15 +159,6 @@ namespace PhotoAPI.Controllers
         }
 
 
-        [HttpGet]
-        [Route("Login")]
-        public async Task<IActionResult> Login(string ReturnUrl = null)
-        {
-            await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
-            ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
-            return new RedirectResult(angularURL+ "/Account/Login?ReturnUrl=" + ReturnUrl);
-        }
-
         [HttpPost]
         [Route("Login")]
         public async Task<object> Login(LoginModel model)
@@ -197,9 +169,7 @@ namespace PhotoAPI.Controllers
                 if (result.Succeeded)
                 {
                     var user = await _userManager.FindByEmailAsync(model.Email);
-                    //var appUser = _userManager.Users.SingleOrDefault(r => r.Email == model.Email);
                     return await GenerateJwtToken(model.Email, user);
-                    //return new RedirectResult(angularURL + model.ReturnUrl);
                 } else
                 {
                     return StatusCode(401, "Invalid login attempt.");
@@ -208,14 +178,6 @@ namespace PhotoAPI.Controllers
             string messages = string.Join("; ", ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage));
             return StatusCode(401, messages);
 
-        }
-
-        [HttpPost]
-        [Route("logout")]
-        public async Task<IActionResult> Logout()
-        {
-            await _signInManager.SignOutAsync();
-            return new RedirectResult(angularURL);
         }
 
         private async Task<object> GenerateJwtToken(string email, IdentityUser user)

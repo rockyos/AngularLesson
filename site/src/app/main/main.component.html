@@ -1,10 +1,15 @@
+<div class="d-flex justify-content-end">
+    <div class="d-flex align-items-center">
+        <span>Hello, {{username}}!</span> &nbsp;
+        <button (click)="btnLogOut()" class="btn btn-link">Logout</button>
+    </div>
+</div>
 <table class="table table-borderless">
     <div *ngIf="!photos">No Photos</div>
     <tr *ngFor="let item of photos">
         <td>
             <a data-fancybox="gallery" href="{{url}}/{{item.guid}}">
-                <img class="img-thumbnail mx-auto d-block"
-                    src="{{url}}/{{item.guid}}?width=320" alt="Foto" />
+                <img class="img-thumbnail mx-auto d-block" src="{{url}}/{{item.guid}}?width=320" alt="Foto" />
             </a>
         </td>
         <td>{{item.photoName}}</td>

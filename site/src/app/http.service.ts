@@ -15,10 +15,10 @@ export class HttpService {
     return this.http.get<Array<Photo>>(url);
   }
 
-  public getImagesBySize(url: string): Observable<any> {
-  //  const url = `${environment.apiUrl}api/photo`;
-    return this.http.get<any>(url);
-  }
+  // public getImagesBySize(url: string): Observable<any> {
+  // //  const url = `${environment.apiUrl}api/photo`;
+  //   return this.http.get<any>(url);
+  // }
 
   public addPhoto(newImage: File): Observable<string> {
     const formData = new FormData();
