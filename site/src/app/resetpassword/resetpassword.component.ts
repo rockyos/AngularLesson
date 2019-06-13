@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { HttpService } from '../http.service';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterModule, Router } from '@angular/router';
 
 @Component({
   selector: 'app-resetpassword',
@@ -13,7 +13,7 @@ export class ResetpasswordComponent implements OnInit {
   resetPassForm: FormGroup;
   code: string;
 
-  constructor(private service: HttpService, private activateRoute: ActivatedRoute, private fb: FormBuilder) {
+  constructor(private service: HttpService, private router: Router, private activateRoute: ActivatedRoute, private fb: FormBuilder) {
     this.code = this.activateRoute.snapshot.queryParamMap.get("code");
     console.log(this.code);
     this.code = this.code.replace(/\s+/g, '+');
@@ -29,8 +29,10 @@ export class ResetpasswordComponent implements OnInit {
   }
 
   resetPassSend(email: string, pass: string, passconfirm: string){
-    this.service.resetPassPost(email, pass, passconfirm, this.code).subscribe(resualt => {
-      this.errorMessage =  resualt['value']['message']});
+    this.service.resetPassPost(email, pass, passconfirm, this.code).subscribe(resualt => 
+      this.router.navigate(['Account/ResetPasswordConfirmation']),
+      error => this.errorMessage = error['error']
+      );
   }
 
 }

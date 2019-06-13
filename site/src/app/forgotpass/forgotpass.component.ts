@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpService } from '../http.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-forgotpass',
@@ -11,7 +12,7 @@ export class ForgotpassComponent implements OnInit {
   errorMessage: string;
   forgotPassForm: FormGroup;
 
-  constructor(private service: HttpService, private fb: FormBuilder) {
+  constructor(private service: HttpService, private router: Router, private fb: FormBuilder) {
     this.forgotPassForm = this.fb.group({
       forgotEmail: ["", [Validators.required, Validators.email]]
     });
@@ -20,10 +21,11 @@ export class ForgotpassComponent implements OnInit {
   ngOnInit() {
   }
 
-  forgotPassSend(email: string){
-    this.service.forgotPassPost(email).subscribe(resualt =>{
-        this.errorMessage = resualt['value']['message']
-    });
+  forgotPassSend(email: string) {
+    this.service.forgotPassPost(email).subscribe(resualt =>
+      this.router.navigate(['Account/ForgotPasswordConfirmation']),
+      error => this.errorMessage = error['error']
+    );
   }
 
 }

@@ -100,7 +100,7 @@ namespace PhotoAPI.Controllers
                 var user = await _userManager.FindByEmailAsync(model.Email);
                 if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
                 {
-                    return new RedirectResult(angularURL + "/Account/ForgotPasswordConfirmation");
+                    return StatusCode(404, "Wrong email!");
                 }
 
                 var code = await _userManager.GeneratePasswordResetTokenAsync(user);
@@ -113,10 +113,10 @@ namespace PhotoAPI.Controllers
                     "Reset Password",
                     $"Please reset your password by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
 
-                return new RedirectResult(angularURL + "/Account/ForgotPasswordConfirmation");
+                return StatusCode(200);
             }
             string messages = string.Join("; ", ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage));
-            return StatusCode(200, Json(new { Message = messages }));
+            return StatusCode(404, messages);
         }
 
         [HttpGet]
@@ -133,19 +133,19 @@ namespace PhotoAPI.Controllers
             if (!ModelState.IsValid)
             {
                 string messages = string.Join("; ", ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage));
-                return StatusCode(200, Json(new { Message = messages }));
+                return StatusCode(404, messages);
             }
 
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)
             {
-                return new RedirectResult(angularURL + "Account/ResetPasswordConfirmation");
+                return StatusCode(404, "Wrong email!");
             }
 
             var result = await _userManager.ResetPasswordAsync(user, model.Code, model.Password);
             if (result.Succeeded)
             {
-                return new RedirectResult(angularURL + "Account/ResetPasswordConfirmation");
+                return StatusCode(200);
             }
 
             foreach (var error in result.Errors)
@@ -154,7 +154,7 @@ namespace PhotoAPI.Controllers
             }
 
             string errmessages = string.Join("; ", ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage));
-            return StatusCode(200, Json(new { Message = errmessages }));
+            return StatusCode(404, errmessages);
 
         }
 

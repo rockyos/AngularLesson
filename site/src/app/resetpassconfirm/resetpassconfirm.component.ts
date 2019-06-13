@@ -7,7 +7,7 @@ import { environment } from 'src/environments/environment.prod';
   styleUrls: ['./resetpassconfirm.component.css']
 })
 export class ResetpassconfirmComponent implements OnInit {
-  url = `${environment.apiUrl}`;
+  url = `${environment.clientUrl}`;
   constructor() { }
 
   ngOnInit() {
