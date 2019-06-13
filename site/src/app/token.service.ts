@@ -10,23 +10,39 @@ export class TokenService {
   constructor(private router: Router) { }
 
   tokenKey: string = 'jwt';
+  localStorage: boolean = false;
+
+  sessionOrLocalStorage(rememberMe: boolean) {
+    this.localStorage = rememberMe;
+    console.log("sessionOrLocalStorage: " + this.localStorage);
+  }
 
   loggedOn() {
-    const token: string = localStorage.getItem(this.tokenKey);
+    var token = this.getToken();
     if (token) {
       this.router.navigate(['']);
     }
   }
 
   setToken(jwt: string) {
-    localStorage.setItem(this.tokenKey, jwt);
+    if (this.localStorage) {
+      localStorage.setItem(this.tokenKey, jwt);
+    } else {
+      sessionStorage.setItem(this.tokenKey, jwt);
+    }
   }
 
   getToken(): string {
-    return localStorage.getItem(this.tokenKey);
+    var token;
+    token = localStorage.getItem(this.tokenKey);
+    if (!token) {
+      token = sessionStorage.getItem(this.tokenKey)
+    }
+    return token;
   }
 
   logOut() {
+    sessionStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.tokenKey);
     this.router.navigate(['Account/Login']);
   }

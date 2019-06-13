@@ -26,9 +26,8 @@ export class RegisterComponent implements OnInit {
     this.token.loggedOn();
   }
 
-
-
   registerSend(email: string, pass: string, passconfirm: string) {
+    this.token.sessionOrLocalStorage(false);
     this.service.registerPost(email, pass, passconfirm).subscribe(resualt => {
       this.jwt = resualt,
         this.token.setToken(this.jwt),

@@ -16,6 +16,7 @@ export class LoginComponent implements OnInit {
   clientUrl = `${environment.clientUrl}`;
   loginForm: FormGroup;
   jwt: string;
+  rememberMe: boolean = false;
 
   constructor(private service: HttpService, private token: TokenService, private fb: FormBuilder) {
     this.loginForm = this.fb.group({
@@ -30,7 +31,8 @@ export class LoginComponent implements OnInit {
   }
 
   loginSend(email: string, pass: string) {
-   // this.rememberMe = this.loginForm.controls['userCheckbox'].value;
+    this.rememberMe = this.loginForm.controls['userCheckbox'].value;
+    this.token.sessionOrLocalStorage(this.rememberMe);
     this.service.loginPost(email, pass).subscribe(resualt => {
       this.jwt = resualt,
         this.token.setToken(this.jwt),
