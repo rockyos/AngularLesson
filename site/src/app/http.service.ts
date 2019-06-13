@@ -57,7 +57,7 @@ export class HttpService {
     return this.http.delete(url, httpOptions);
   }
 
-  public loginPost(email, password, rememberMe): Observable<string> {
+  public loginPost(email, password): Observable<string> {
     const httpOptions = {
       responseType: 'text' as 'json'
     };
@@ -65,7 +65,7 @@ export class HttpService {
     const formData = new FormData();
     formData.append('Email', email);
     formData.append('Password', password);
-    formData.append('RememberMe', rememberMe);
+    //formData.append('RememberMe', rememberMe);
     return this.http.post<string>(url, formData, httpOptions);
   }
 

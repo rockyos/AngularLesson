@@ -19,6 +19,7 @@ import { ResetpasswordComponent } from './resetpassword/resetpassword.component'
 import { ResetpassconfirmComponent } from './resetpassconfirm/resetpassconfirm.component';
 import { HttpConfigInterceptor } from './http.config.interceptor';
 import { AuthGuard } from './guard.services';
+import { TokenService } from './token.service';
 
 @NgModule({
   declarations: [
@@ -41,7 +42,7 @@ import { AuthGuard } from './guard.services';
     FormsModule,
     ReactiveFormsModule
   ],
-  providers: [HttpService, AuthGuard, {provide: HTTP_INTERCEPTORS, useClass: HttpConfigInterceptor, multi: true}],
+  providers: [HttpService, AuthGuard, TokenService, {provide: HTTP_INTERCEPTORS, useClass: HttpConfigInterceptor, multi: true}],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, Validators, FormBuilder } from '@angular/forms';
 import { HttpService } from '../http.service';
-import { Router } from '@angular/router';
 import { environment } from 'src/environments/environment.prod';
+import { TokenService } from '../token.service';
 
 
 @Component({
@@ -17,30 +17,24 @@ export class LoginComponent implements OnInit {
   loginForm: FormGroup;
   jwt: string;
 
-  constructor(private service: HttpService, private router: Router, private fb: FormBuilder) {
+  constructor(private service: HttpService, private token: TokenService, private fb: FormBuilder) {
     this.loginForm = this.fb.group({
       userEmail: ["", [Validators.required, Validators.email]],
       userPassword: ["", Validators.required],
       userCheckbox: [false]
-    })
+    });
   }
 
   ngOnInit() {
-    this.loggedOn();
+    this.token.loggedOn();
   }
 
-  loggedOn() {
-    const token: string = localStorage.getItem('jwt');
-    if (token) {
-      this.router.navigate(['']);
-    }
-  }
-
-  loginSend(email: string, pass: string, rememberMe: boolean) {
-    this.service.loginPost(email, pass, rememberMe).subscribe(resualt => {
+  loginSend(email: string, pass: string) {
+   // this.rememberMe = this.loginForm.controls['userCheckbox'].value;
+    this.service.loginPost(email, pass).subscribe(resualt => {
       this.jwt = resualt,
-        localStorage.setItem('jwt', this.jwt),
-        this.loggedOn()
+        this.token.setToken(this.jwt),
+        this.token.loggedOn();
     }, error => this.errorMessage = error['error']);
   }
 }
