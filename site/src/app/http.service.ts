@@ -3,6 +3,8 @@ import { Photo } from './photo';
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment.prod';
+import { map } from 'rxjs/internal/operators/map';
+
 
 @Injectable({
   providedIn: 'root'
@@ -16,8 +18,7 @@ export class HttpService {
   }
 
   public getImagesBySize(url: string): Observable<any> {
-  //  const url = `${environment.apiUrl}api/photo`;
-    return this.http.get<any>(url);
+    return this.http.get(url,  {responseType: 'blob'}).pipe(map(e => URL.createObjectURL(e)));
   }
 
   public addPhoto(newImage: File): Observable<string> {

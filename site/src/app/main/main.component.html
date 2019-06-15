@@ -8,8 +8,8 @@
     <div *ngIf="!photos">No Photos</div>
     <tr *ngFor="let item of photos">
         <td>
-            <a data-fancybox="gallery" href="{{url}}/{{item.guid}}">
-                <img class="img-thumbnail mx-auto d-block" src="getImageBySize(item.guid)" alt="Foto" />
+            <a data-fancybox="gallery" [href]="loadImages(item.guid)|async">
+                <img class="img-thumbnail mx-auto d-block" [src]="loadImages(item.guid +'?width=320')|async" alt="Foto" />
             </a>
         </td>
         <td>{{item.photoName}}</td>

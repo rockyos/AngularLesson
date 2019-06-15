@@ -2,7 +2,6 @@ import { Component, OnInit, Input } from '@angular/core';
 import { HttpService } from '../http.service';
 import { Photo } from '../photo';
 import { environment } from 'src/environments/environment.prod';
-
 import { TokenService } from '../token.service';
 
 @Component({
@@ -36,8 +35,8 @@ export class MainComponent implements OnInit {
     this.service.delPhoto(photo).subscribe(response => this.photos.splice(index, 1));
   }
 
-  public getImagesBySize(itemId: string) {
-    const imageUrl = `${this.url}/${itemId}?width=320`;
+  loadImages(itemId: string) {
+    const imageUrl = `${this.url}/${itemId}`;
     return this.service.getImagesBySize(imageUrl);
   }
 }
