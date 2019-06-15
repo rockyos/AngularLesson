@@ -3,7 +3,7 @@ import { Photo } from './photo';
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment.prod';
-import { map } from 'rxjs/internal/operators/map';
+
 
 
 @Injectable({
@@ -17,9 +17,7 @@ export class HttpService {
     return this.http.get<Array<Photo>>(url);
   }
 
-  public getImagesBySize(url: string): Observable<any> {
-    return this.http.get(url,  {responseType: 'blob'}).pipe(map(e => URL.createObjectURL(e)));
-  }
+
 
   public addPhoto(newImage: File): Observable<string> {
     const formData = new FormData();

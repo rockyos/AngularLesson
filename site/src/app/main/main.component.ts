@@ -34,9 +34,4 @@ export class MainComponent implements OnInit {
     let index = this.photos.indexOf(photo);
     this.service.delPhoto(photo).subscribe(response => this.photos.splice(index, 1));
   }
-
-  loadImages(itemId: string) {
-    const imageUrl = `${this.url}/${itemId}`;
-    return this.service.getImagesBySize(imageUrl);
-  }
 }
