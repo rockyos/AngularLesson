@@ -8,10 +8,10 @@ import { switchMap } from 'rxjs/internal/operators/switchMap';
 })
 export class ImagePipe implements PipeTransform {
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient ) { }
 
   transform(url: string) {
-    return this.http.get(url, { responseType: "blob" }).pipe(
+    return this.http.get( url, { responseType: "blob" }).pipe(
       switchMap(blob => {
         return Observable.create(observer => {
           const reader = new FileReader();

@@ -21,6 +21,7 @@ import { HttpConfigInterceptor } from './http.config.interceptor';
 import { AuthGuard } from './guard.services';
 import { TokenService } from './token.service';
 import { ImagePipe } from './image.pipe';
+import { SafePipe } from './safe.pipe';
 
 @NgModule({
   declarations: [
@@ -35,7 +36,8 @@ import { ImagePipe } from './image.pipe';
     ForgotpassconfirmComponent,
     ResetpasswordComponent,
     ResetpassconfirmComponent,
-    ImagePipe
+    ImagePipe,
+    SafePipe,
   ],
   imports: [
     BrowserModule,
