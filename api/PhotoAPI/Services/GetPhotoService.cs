@@ -2,13 +2,12 @@
 using PhotoAPI.Extensions;
 using PhotoAPI.Services.Interfaces;
 using PhotoAPI.Repository;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using PhotoAPI.Models.Dto;
 using PhotoAPI.Models.Entity;
-
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace PhotoAPI.Services
 {
@@ -20,9 +19,9 @@ namespace PhotoAPI.Services
             _mapper = mapper;
         }
 
-        public async Task<List<PhotoDTO>> GetPhotoDBandSessionAsync(ISession session, string sessionkey)
+        public async Task<List<PhotoDTO>> GetPhotoDBandSessionAsync(IDistributedCache cache, string authorizationHeader)
         {
-            var photosFromSession = session.Get<List<Photo>>(sessionkey);
+            var photosFromSession = await cache.GetAsync<List<Photo>>(authorizationHeader);
             var photoFromDb = await (await UnitOfWork.PhotoRepository.GetAllAsync()).ToListAsync();
             if (photosFromSession != null)
             {

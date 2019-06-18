@@ -1,11 +1,13 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 
 namespace PhotoAPI.Models.Entity
 {
+    [Serializable]
     public class Photo
     {
         public int Id { get; set; }

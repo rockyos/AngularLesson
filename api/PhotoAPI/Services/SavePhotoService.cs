@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using PhotoAPI.Extensions;
 using PhotoAPI.Models.Entity;
 using PhotoAPI.Repository;
@@ -15,10 +16,10 @@ namespace PhotoAPI.Services
         {
         }
 
-        public async Task SavePhotoAsync(ISession session, string sessionkey)
+        public async Task SavePhotoAsync(IDistributedCache cache, string authorizationHeader)
         {
             //var log = new LoggerConfiguration().MinimumLevel.Debug().WriteTo.Console().WriteTo.RollingFile("logs\\log-{Date}.txt").CreateLogger();
-            var photosInSession = session.Get<List<Photo>>(sessionkey);
+            var photosInSession = await cache.GetAsync<List<Photo>>(authorizationHeader);
             if (photosInSession != null)
             {
                 foreach (var item in photosInSession)

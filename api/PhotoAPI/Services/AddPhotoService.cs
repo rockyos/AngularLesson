@@ -1,20 +1,20 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Distributed;
 using PhotoAPI.Extensions;
 using PhotoAPI.Models.Entity;
 using PhotoAPI.Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace PhotoAPI.Services
 {
     public class AddPhotoService : IAddPhotoService
     {
-        public async Task AddPhotoServiceAsync(IFormFile newImage, ISession session, string sessionkey)
+        public async Task AddPhotoServiceAsync(IFormFile newImage, IDistributedCache cache, string authorizationHeader)
         {
-            var photosInSession = session.Get<List<Photo>>(sessionkey);
+            var photosInSession = await cache.GetAsync<List<Photo>>(authorizationHeader);
             var photo = new Photo();
             using (var reader = new BinaryReader(newImage.OpenReadStream()))
             {
@@ -27,10 +27,12 @@ namespace PhotoAPI.Services
             if (photosInSession != null)
             {
                 photosInSession.Add(photo);
-                session.Set(sessionkey, photosInSession);
+                await cache.SetAsync<List<Photo>>(authorizationHeader, photosInSession, 
+                    new DistributedCacheEntryOptions() { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(20) });
             } else
             {
-                session.Set(sessionkey, new List<Photo>() { photo });
+                await cache.SetAsync<List<Photo>>(authorizationHeader, new List<Photo>() { photo },
+                    new DistributedCacheEntryOptions() { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(20) });
             }
         }
     }

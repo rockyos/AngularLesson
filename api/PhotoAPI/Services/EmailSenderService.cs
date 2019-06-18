@@ -5,8 +5,6 @@ using Microsoft.Extensions.Options;
 using MimeKit;
 using PhotoAPI.Models.Email;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace PhotoAPI.Services

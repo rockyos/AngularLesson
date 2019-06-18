@@ -191,14 +191,7 @@ namespace PhotoAPI.Controllers
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtKey"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            //DateTime expires;
-           // if (rememberMe)
-          //  {
-                var expires = DateTime.Now.AddDays(Convert.ToDouble(_configuration["JwtExpireDays"]));
-           // } else {
-              //   expires = DateTime.Now.AddSeconds(10);
-          //  }
-            
+            var expires = DateTime.Now.AddDays(Convert.ToDouble(_configuration["JwtExpireDays"]));
 
             var token = new JwtSecurityToken(
                 _configuration["JwtIssuer"],

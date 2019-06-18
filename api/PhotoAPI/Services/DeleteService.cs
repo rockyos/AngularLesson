@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using PhotoAPI.Extensions;
 using PhotoAPI.Models.Entity;
 using PhotoAPI.Repository;
 using PhotoAPI.Services.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -15,9 +16,9 @@ namespace PhotoAPI.Services
         {
         }
 
-        public async Task DeleteAsync(string guid, ISession session, string sessionkey)
+        public async Task DeleteAsync(string guid, IDistributedCache cache, string authorizationHeader)
         {
-            var photosInSession = session.Get<List<Photo>>(sessionkey);
+            var photosInSession = await cache.GetAsync<List<Photo>>(authorizationHeader);
             var photoDb = await (await UnitOfWork.PhotoRepository.GetAllAsync()).FirstOrDefaultAsync(m => m.Guid == guid);
             if (photoDb != null)
             {
@@ -38,7 +39,8 @@ namespace PhotoAPI.Services
                     }
                 }
             }
-            session.Set(sessionkey, photosInSession);
+            await cache.SetAsync<List<Photo>>(authorizationHeader, photosInSession, 
+                new DistributedCacheEntryOptions() { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(20)});
         }
     }
 }
