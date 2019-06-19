@@ -12,7 +12,7 @@ namespace PhotoAPI.Services
 {
     public class AddPhotoService : IAddPhotoService
     {
-        public async Task AddPhotoServiceAsync(IFormFile newImage, IDistributedCache cache, string authorizationHeader)
+        public async Task AddPhotoServiceAsync(IFormFile newImage, IDistributedCache cache, string authorizationHeader, int lifeTime)
         {
             var photosInSession = await cache.GetAsync<List<Photo>>(authorizationHeader);
             var photo = new Photo();
@@ -28,11 +28,11 @@ namespace PhotoAPI.Services
             {
                 photosInSession.Add(photo);
                 await cache.SetAsync<List<Photo>>(authorizationHeader, photosInSession, 
-                    new DistributedCacheEntryOptions() { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(20) });
+                    new DistributedCacheEntryOptions() { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(lifeTime) });
             } else
             {
                 await cache.SetAsync<List<Photo>>(authorizationHeader, new List<Photo>() { photo },
-                    new DistributedCacheEntryOptions() { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(20) });
+                    new DistributedCacheEntryOptions() { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(lifeTime) });
             }
         }
     }

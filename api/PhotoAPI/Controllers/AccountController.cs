@@ -38,7 +38,6 @@ namespace PhotoAPI.Controllers
             _configuration = configuration;
         }
 
-
         [HttpPost]
         [Route("Register")]
         public async Task<object> Register(RegisterModel model)
@@ -177,7 +176,6 @@ namespace PhotoAPI.Controllers
             } 
             string messages = string.Join("; ", ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage));
             return StatusCode(401, messages);
-
         }
 
         private async Task<object> GenerateJwtToken(string email, IdentityUser user)
@@ -192,7 +190,6 @@ namespace PhotoAPI.Controllers
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtKey"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
             var expires = DateTime.Now.AddDays(Convert.ToDouble(_configuration["JwtExpireDays"]));
-
             var token = new JwtSecurityToken(
                 _configuration["JwtIssuer"],
                 _configuration["JwtIssuer"],

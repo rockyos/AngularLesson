@@ -14,7 +14,6 @@ export class TokenService {
 
   sessionOrLocalStorage(rememberMe: boolean) {
     this.localStorage = rememberMe;
-    console.log("sessionOrLocalStorage: " + this.localStorage);
   }
 
   loggedOn() {

@@ -32,6 +32,6 @@ export class RegisterComponent implements OnInit {
       this.jwt = resualt,
         this.token.setToken(this.jwt),
         this.token.loggedOn()
-    }, error => this.errorMessage = error['error']);
+    }, error => { typeof error['error'] === 'string' ? this.errorMessage = error['error'] : this.errorMessage = "error" });
   }
 }

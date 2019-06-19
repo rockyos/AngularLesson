@@ -6,6 +6,6 @@ namespace PhotoAPI.Services.Interfaces
 {
     public interface IDeleteService
     {
-        Task DeleteAsync(string guid, IDistributedCache cache, string authorizationHeader);
+        Task DeleteAsync(string guid, IDistributedCache cache, string authorizationHeader, int lifeTime);
     }
 }

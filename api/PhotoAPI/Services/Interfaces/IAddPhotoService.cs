@@ -7,6 +7,6 @@ namespace PhotoAPI.Services.Interfaces
 {
     public interface IAddPhotoService
     {
-        Task AddPhotoServiceAsync(IFormFile newImage, IDistributedCache cache, string authorizationHeader);
+        Task AddPhotoServiceAsync(IFormFile newImage, IDistributedCache cache, string authorizationHeader, int lifeTime);
     }
 }

@@ -16,7 +16,7 @@ namespace PhotoAPI.Services
         {
         }
 
-        public async Task DeleteAsync(string guid, IDistributedCache cache, string authorizationHeader)
+        public async Task DeleteAsync(string guid, IDistributedCache cache, string authorizationHeader, int lifeTime)
         {
             var photosInSession = await cache.GetAsync<List<Photo>>(authorizationHeader);
             var photoDb = await (await UnitOfWork.PhotoRepository.GetAllAsync()).FirstOrDefaultAsync(m => m.Guid == guid);
@@ -40,7 +40,7 @@ namespace PhotoAPI.Services
                 }
             }
             await cache.SetAsync<List<Photo>>(authorizationHeader, photosInSession, 
-                new DistributedCacheEntryOptions() { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(20)});
+                new DistributedCacheEntryOptions() { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(lifeTime) });
         }
     }
 }
