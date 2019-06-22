@@ -39,4 +39,8 @@ export class LoginComponent implements OnInit {
         this.token.loggedOn();
     }, error => { typeof error['error'] === 'string' ? this.errorMessage = error['error'] : this.errorMessage = "error" });
   }
+
+  googleBtn(){
+    this.service.googleGet().subscribe();
+  }
 }

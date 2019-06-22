@@ -2,7 +2,8 @@
 <h4>Use a local account to log in.</h4>
 <hr />
 <div class="col-md-5">
-  <form [formGroup]="loginForm" novalidate (ngSubmit)="loginSend(loginForm.controls['userEmail'].value, loginForm.controls['userPassword'].value)">
+  <form [formGroup]="loginForm" novalidate
+    (ngSubmit)="loginSend(loginForm.controls['userEmail'].value, loginForm.controls['userPassword'].value)">
     <div class="form-group">
       <div class="alert alert-danger" *ngIf="errorMessage">
         {{errorMessage}}
@@ -38,3 +39,6 @@
     </div>
   </form>
 </div>
+<hr />
+<h4>Use social account to log in.</h4>
+<button class="btn btn-outline-dark font-weight-bold" (click)="googleBtn()">By Google</button>

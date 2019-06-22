@@ -96,4 +96,9 @@ export class HttpService {
     formData.append('Code', code);
     return this.http.post<string>(url, formData);
   }
+
+  public googleGet(): Observable<string>{
+    const url = `${environment.apiUrl}Account/ExternalLogin?provider=Google&redirect_uri=http%3A%2F%2Flocalhost%3A4200%2F`;
+    return this.http.get<string>(url);
+  }
 }
