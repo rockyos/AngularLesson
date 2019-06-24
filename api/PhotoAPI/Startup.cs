@@ -63,7 +63,7 @@ namespace PhotoAPI
                     };
                 });
 
-            services.AddAuthentication().AddGoogle("Google", options => {
+            services.AddAuthentication().AddGoogle(options => {
                 options.CallbackPath = "/Account/Callback";
                 options.ClientId = "409068124383-d3kr9t4n79umkc5nvsfh0tkob3cjp30m.apps.googleusercontent.com";
                 options.ClientSecret = "jbFmQogMkI7bWuzRlofHriPW";

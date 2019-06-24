@@ -98,7 +98,7 @@ export class HttpService {
   }
 
   public googleGet(): Observable<string>{
-    const url = `${environment.apiUrl}Account/ExternalLogin?provider=Google&redirect_uri=http%3A%2F%2Flocalhost%3A63627%2FAccount%2FCallback`;
+    const url = `${environment.apiUrl}Account/ExternalLogin?provider=Google`;
     return this.http.get<string>(url);
   }
 }
