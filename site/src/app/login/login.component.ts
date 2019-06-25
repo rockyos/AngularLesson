@@ -43,4 +43,7 @@ export class LoginComponent implements OnInit {
   googleBtn(){
     this.service.googleGet().subscribe();
   }
+  facebookBtn(){
+    this.service.facebookGet().subscribe();
+  }
 }

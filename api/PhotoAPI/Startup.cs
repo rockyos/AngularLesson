@@ -2,6 +2,8 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using AutoMapper;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -43,42 +45,51 @@ namespace PhotoAPI
             }).AddEntityFrameworkStores<PhotoContext>()
             .AddDefaultTokenProviders();
 
-            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear(); 
+            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+
             services.AddAuthentication(options =>
-                {
-                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(cfg =>
+            {
+               cfg.RequireHttpsMetadata = false;
+               cfg.SaveToken = true;
+               cfg.TokenValidationParameters = new TokenValidationParameters
+               {
+                   ValidIssuer = Configuration["JwtIssuer"],
+                   ValidAudience = Configuration["JwtIssuer"],
+                   IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JwtKey"])),
+                   ClockSkew = TimeSpan.Zero 
+               };
+            });
 
-                }).AddJwtBearer(cfg =>
-                {
-                    cfg.RequireHttpsMetadata = false;
-                    cfg.SaveToken = true;
-                    cfg.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidIssuer = Configuration["JwtIssuer"],
-                        ValidAudience = Configuration["JwtIssuer"],
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JwtKey"])),
-                        ClockSkew = TimeSpan.Zero 
-                    };
-                });
-
-            services.AddAuthentication().AddGoogle(options => {
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+            .AddCookie("ExternalCookie", options =>
+            {
+                options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+                options.SlidingExpiration = true;
+                options.Cookie.HttpOnly = true;
+                //options.Cookie.SameSite = SameSiteMode.Strict; 
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+            }).AddGoogle("Google", options =>
+            {
                 options.CallbackPath = "/Account/Callback";
                 options.ClientId = "409068124383-d3kr9t4n79umkc5nvsfh0tkob3cjp30m.apps.googleusercontent.com";
                 options.ClientSecret = "jbFmQogMkI7bWuzRlofHriPW";
-            });//.AddFacebook(facebookOptions => { ... });
+                options.SignInScheme = "ExternalCookie";
+            });
 
             services.Configure<EmailSettings>(Configuration.GetSection("EmailSettings"));
             services.AddSingleton<IEmailSender, EmailSenderService>();
 
-            services.AddCors();
+            services.AddCors(options =>
+            {
+                options.AddDefaultPolicy( builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader().AllowCredentials());
+            });
 
             services.AddDistributedMemoryCache(); 
-            //services.AddSession(options =>
-            //{
-            //    options.IdleTimeout = TimeSpan.FromMinutes(120);
-            //});
 
             services.Configure<CookiePolicyOptions>(options =>
             {
@@ -121,10 +132,9 @@ namespace PhotoAPI
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+            app.UseCors();
             app.UseCookiePolicy();
             app.UseAuthentication();
-            //app.UseSession();
-            app.UseCors(builder => builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod().AllowCredentials());
             app.UseMvc();
         }
     }

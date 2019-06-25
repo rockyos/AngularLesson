@@ -101,4 +101,8 @@ export class HttpService {
     const url = `${environment.apiUrl}Account/ExternalLogin?provider=Google`;
     return this.http.get<string>(url);
   }
+  public facebookGet(): Observable<string>{
+    const url = `${environment.apiUrl}Account/ExternalLogin?provider=Facebook`;
+    return this.http.get<string>(url);
+  }
 }
