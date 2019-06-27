@@ -66,11 +66,11 @@ namespace PhotoAPI
                };
             });
 
-            services.AddAuthentication(
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme
                 //options.DefaultChallengeScheme = FacebookDefaults.AuthenticationScheme;
                 //options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 //options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-            ) //CookieAuthenticationDefaults.AuthenticationScheme
+            ) 
             //.AddCookie("ExternalCookie", options =>
             //{
             //    options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
