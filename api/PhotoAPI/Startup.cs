@@ -3,6 +3,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using AutoMapper;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Facebook;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -65,21 +66,31 @@ namespace PhotoAPI
                };
             });
 
-            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-            .AddCookie("ExternalCookie", options =>
+            services.AddAuthentication(
+                //options.DefaultChallengeScheme = FacebookDefaults.AuthenticationScheme;
+                //options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                //options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            ) //CookieAuthenticationDefaults.AuthenticationScheme
+            //.AddCookie("ExternalCookie", options =>
+            //{
+            //    options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+            //    options.SlidingExpiration = true;
+            //    options.Cookie.HttpOnly = true;
+            //    //options.Cookie.SameSite = SameSiteMode.Strict; 
+            //    //options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+            //})
+            .AddGoogle(options =>
             {
-                options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
-                options.SlidingExpiration = true;
-                options.Cookie.HttpOnly = true;
-                //options.Cookie.SameSite = SameSiteMode.Strict; 
-                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-            }).AddGoogle("Google", options =>
+                options.CallbackPath = "/Account/Callback_Google";
+                options.ClientId = Configuration["GoogleID"]; 
+                options.ClientSecret = Configuration["GoogleKey"]; 
+                //options.SignInScheme = "ExternalCookie";
+            }).AddFacebook(options =>
             {
-                options.CallbackPath = "/Account/Callback";
-                options.ClientId = "409068124383-d3kr9t4n79umkc5nvsfh0tkob3cjp30m.apps.googleusercontent.com";
-                options.ClientSecret = "jbFmQogMkI7bWuzRlofHriPW";
-                options.SignInScheme = "ExternalCookie";
-            });
+                options.CallbackPath = "/Account/Callback_Facebook";
+                options.AppId = Configuration["FacebookID"];
+                options.AppSecret = Configuration["FacebookKey"];
+            }).AddCookie();
 
             services.Configure<EmailSettings>(Configuration.GetSection("EmailSettings"));
             services.AddSingleton<IEmailSender, EmailSenderService>();

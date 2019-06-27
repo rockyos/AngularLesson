@@ -6,6 +6,8 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Google.Apis.Oauth2.v2;
+using Google.Apis.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -204,21 +206,14 @@ namespace PhotoAPI.Controllers
         [Route("ExternalLogin")]
         public IActionResult ExternalLogin(string provider, string redirect_uri = null)
         {
-            // Request a redirect to the external login provider.
-            //var redirectUrl = Url.Page("/", pageHandler: "Callback", values: new { returnUrl });
             var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirect_uri);
             return new ChallengeResult(provider, properties);
         }
 
-        /////////////////////////////////////////////////////////////////////////////
-
-        public string LoginProvider { get; set; }
-
-        public string ReturnUrl { get; set; }
 
         [HttpGet]
-        [Route("Callback")]
-        public async Task<IActionResult> OnGetCallbackAsync()
+        [Route("Callback_Google")]
+        public async Task<object> OnGetCallbackGoogleAsync()
         {
             var info = await _signInManager.GetExternalLoginInfoAsync();
             if (info == null)
@@ -229,8 +224,11 @@ namespace PhotoAPI.Controllers
             var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
             if (result.Succeeded)
             {
-                //var user = await _userManager.FindByEmailAsync(model.Email);
-                //return await GenerateJwtToken(model.Email, user); need token save + redirect
+                //var oauthService = new Oauth2Service(new BaseClientService.Initializer { ApiKey = _configuration["GoogleKey"] });
+                //var tokenInfoRequest = oauthService.Tokeninfo();
+                //var userInfo = await tokenInfoRequest.ExecuteAsync();
+                //var user = await _userManager.FindByEmailAsync(userInfo.Email);
+                //return await GenerateJwtToken(userInfo.Email, user);
                 return new RedirectResult(angularURL);
             }
             if (result.IsLockedOut)
@@ -239,16 +237,53 @@ namespace PhotoAPI.Controllers
             } else
             {
                 // If the user does not have an account, then ask the user to create an account.
-                LoginProvider = info.LoginProvider;
                 if (info.Principal.HasClaim(c => c.Type == ClaimTypes.Email))
                 {
                     var mail = info.Principal.FindFirstValue(ClaimTypes.Email);
                 }
-                return new RedirectResult(angularURL + "/Account/ExternalEmail"); //+  need add mail
+                return new RedirectResult(angularURL + "/Account/RegisterExternal"); 
             }
         }
 
-        public async Task<object> OnPostConfirmationAsync(ExternalLogin model)
+
+        [HttpGet]
+        [Route("Callback_Facebook")]
+        public async Task<object> OnGetCallbackFacebookAsync()
+        {
+            var info = await _signInManager.GetExternalLoginInfoAsync();
+            if (info == null)
+            {
+                return StatusCode(500, "Error loading external login information.");
+            }
+            // Sign in the user with this external login provider if the user already has a login.
+            var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
+            if (result.Succeeded)
+            {
+                //var oauthService = new Oauth2Service(new BaseClientService.Initializer { ApiKey = _configuration["GoogleKey"] });
+                //var tokenInfoRequest = oauthService.Tokeninfo();
+                //var userInfo = await tokenInfoRequest.ExecuteAsync();
+                //var user = await _userManager.FindByEmailAsync(userInfo.Email);
+                //return await GenerateJwtToken(userInfo.Email, user);
+                return new RedirectResult(angularURL);
+            }
+            if (result.IsLockedOut)
+            {
+                return new RedirectResult(angularURL);
+            }
+            else
+            {
+                // If the user does not have an account, then ask the user to create an account.
+                if (info.Principal.HasClaim(c => c.Type == ClaimTypes.Email))
+                {
+                    var mail = info.Principal.FindFirstValue(ClaimTypes.Email);
+                }
+                return new RedirectResult(angularURL + "/Account/RegisterExternal");
+            }
+        }
+
+        [HttpPost]
+        [Route("ExternalConfirmation")]
+        public async Task<object> OnPostExternalConfirmationAsync(ExternalLogin model)
         {
             // Get the information about the user from the external login provider
             var info = await  _signInManager.GetExternalLoginInfoAsync();
@@ -256,7 +291,6 @@ namespace PhotoAPI.Controllers
             {
                 return StatusCode(500, "Error loading external login information during confirmation.");
             }
-
             if (ModelState.IsValid)
             {
                 var user = new IdentityUser { UserName = model.Email, Email = model.Email };
@@ -267,7 +301,7 @@ namespace PhotoAPI.Controllers
                     if (result.Succeeded)
                     {
                        await _signInManager.SignInAsync(user, isPersistent: false);
-                       return await GenerateJwtToken(model.Email, user);// + need add angular redirect
+                       return await GenerateJwtToken(model.Email, user);
                     }
                 }
                 foreach (var error in result.Errors)
@@ -276,7 +310,6 @@ namespace PhotoAPI.Controllers
                 }
             }
             string messages = string.Join("; ", ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage));
-            LoginProvider = info.LoginProvider;
             return StatusCode(401, messages);
         }
 

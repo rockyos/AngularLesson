@@ -9,6 +9,7 @@ import { ForgotpassconfirmComponent } from './forgotpassconfirm/forgotpassconfir
 import { ResetpasswordComponent } from './resetpassword/resetpassword.component';
 import { ResetpassconfirmComponent } from './resetpassconfirm/resetpassconfirm.component';
 import { AuthGuard } from './guard.services';
+import { RegisterExternalComponent } from './register-external/register-external.component';
 
 const routes: Routes = [
   { path: '', component: IndexComponent, canActivate: [AuthGuard] },
@@ -20,6 +21,7 @@ const routes: Routes = [
   { path: 'Account/ResetPasswordConfirmation', component: ResetpassconfirmComponent },
   { path: 'Account/Register', component: RegisterComponent },
   { path: 'Account/Login', component: LoginComponent },
+  { path: 'Account/RegisterExternal', component: RegisterExternalComponent },
   { path: '**', redirectTo: '' }
 ];
 

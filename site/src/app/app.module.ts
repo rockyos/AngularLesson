@@ -22,6 +22,7 @@ import { AuthGuard } from './guard.services';
 import { TokenService } from './token.service';
 import { ImagePipe } from './image.pipe';
 import { SafePipe } from './safe.pipe';
+import { RegisterExternalComponent } from './register-external/register-external.component';
 
 @NgModule({
   declarations: [
@@ -38,6 +39,7 @@ import { SafePipe } from './safe.pipe';
     ResetpassconfirmComponent,
     ImagePipe,
     SafePipe,
+    RegisterExternalComponent,
   ],
   imports: [
     BrowserModule,
