@@ -81,15 +81,16 @@ namespace PhotoAPI
             //})
             .AddGoogle(options =>
             {
-                options.CallbackPath = "/Account/Callback_Google";
+                //options.CallbackPath = "/Account/Callback_Google";
                 options.ClientId = Configuration["GoogleID"]; 
                 options.ClientSecret = Configuration["GoogleKey"]; 
                 //options.SignInScheme = "ExternalCookie";
             }).AddFacebook(options =>
             {
-                options.CallbackPath = "/Account/Callback_Facebook";
+                //options.CallbackPath = "/Account/Facebooks";
                 options.AppId = Configuration["FacebookID"];
                 options.AppSecret = Configuration["FacebookKey"];
+                //options.SignInScheme = "ExternalCookie";
             }).AddCookie();
 
             services.Configure<EmailSettings>(Configuration.GetSection("EmailSettings"));

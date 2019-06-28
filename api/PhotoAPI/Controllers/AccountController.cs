@@ -51,7 +51,7 @@ namespace PhotoAPI.Controllers
                 {
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code });
-                    callbackUrl = $"http://localhost:63627{callbackUrl}";
+                    callbackUrl = $"https://localhost:44375{callbackUrl}";
 
                     await _messageService.SendEmailAsync(model.Email, "Confirm your email",
                       $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
@@ -61,7 +61,7 @@ namespace PhotoAPI.Controllers
                 }
                 foreach (var error in result.Errors)
                 {
-                    ModelState.AddModelError(string.Empty, error.Description); 
+                    ModelState.AddModelError(string.Empty, error.Description);
                 }
             }
             string messages = string.Join(" ", ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage));
@@ -69,6 +69,7 @@ namespace PhotoAPI.Controllers
         }
 
         [HttpGet]
+        [Route("ConfirmEmail")]
         public async Task<IActionResult> ConfirmEmail(string userId, string code)
         {
             if (userId == null || code == null)
@@ -212,8 +213,8 @@ namespace PhotoAPI.Controllers
 
 
         [HttpGet]
-        [Route("Callback_Google")]
-        public async Task<object> OnGetCallbackGoogleAsync()
+        [Route("Google")]
+        public async Task<object> Google()
         {
             var info = await _signInManager.GetExternalLoginInfoAsync();
             if (info == null)
@@ -229,6 +230,8 @@ namespace PhotoAPI.Controllers
                 //var userInfo = await tokenInfoRequest.ExecuteAsync();
                 //var user = await _userManager.FindByEmailAsync(userInfo.Email);
                 //return await GenerateJwtToken(userInfo.Email, user);
+                ////////////////
+                // var name = info.Principal.FindFirstValue(ClaimTypes.Name);
                 return new RedirectResult(angularURL);
             }
             if (result.IsLockedOut)
@@ -247,8 +250,8 @@ namespace PhotoAPI.Controllers
 
 
         [HttpGet]
-        [Route("Callback_Facebook")]
-        public async Task<object> OnGetCallbackFacebookAsync()
+        [Route("Facebook")]
+        public async Task<object> Facebook()
         {
             var info = await _signInManager.GetExternalLoginInfoAsync();
             if (info == null)
@@ -264,6 +267,8 @@ namespace PhotoAPI.Controllers
                 //var userInfo = await tokenInfoRequest.ExecuteAsync();
                 //var user = await _userManager.FindByEmailAsync(userInfo.Email);
                 //return await GenerateJwtToken(userInfo.Email, user);
+                ////////////////
+               // var name = info.Principal.FindFirstValue(ClaimTypes.Name);
                 return new RedirectResult(angularURL);
             }
             if (result.IsLockedOut)

@@ -105,12 +105,18 @@ export class HttpService {
   }
 
   public googleGet(): Observable<string>{
-    const url = `${environment.apiSecureUrl}Account/ExternalLogin?provider=Google`;
-    return this.http.get<string>(url);
+    const httpOptions = {
+      responseType: 'text' as 'json'
+    };
+    const url = `${environment.apiUrl}Account/ExternalLogin?provider=Google&redirect_uri=https%3A%2F%2Flocalhost%3A44375%2FAccount%2FFacebook`;
+    return this.http.get<string>(url, httpOptions);
   }
 
   public facebookGet(): Observable<string>{
-    const url = `${environment.apiSecureUrl}Account/ExternalLogin?provider=Facebook`;
-    return this.http.get<string>(url);
+    const httpOptions = {
+      responseType: 'text' as 'json'
+    };
+    const url = `${environment.apiUrl}Account/ExternalLogin?provider=Facebook&redirect_uri=https%3A%2F%2Flocalhost%3A44375%2FAccount%2FFacebook`;
+    return this.http.get<string>(url, httpOptions);
   }
 }
