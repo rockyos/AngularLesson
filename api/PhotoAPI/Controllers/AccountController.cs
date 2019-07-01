@@ -88,7 +88,7 @@ namespace PhotoAPI.Controllers
             {
                 throw new InvalidOperationException($"Error confirming email for user with ID '{userId}':");
             }
-            return new RedirectResult(angularURL + "/Account/Confirm"); 
+            return new RedirectResult(angularURL + "/Account/Confirm");
         }
 
 
@@ -107,7 +107,7 @@ namespace PhotoAPI.Controllers
                 var code = await _userManager.GeneratePasswordResetTokenAsync(user);
 
                 var callbackUrl = Url.Action("ResetPassword", "Account", new { userId = user.Id, code = code });
-                callbackUrl = $"http://localhost:63627{callbackUrl}";
+                callbackUrl = $"https://localhost:44375{callbackUrl}";
 
                 await _messageService.SendEmailAsync(
                     model.Email,
@@ -175,7 +175,7 @@ namespace PhotoAPI.Controllers
                 {
                     return StatusCode(401, "Invalid login attempt.");
                 }
-            } 
+            }
             string messages = string.Join("; ", ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage));
             return StatusCode(401, messages);
         }
@@ -223,6 +223,9 @@ namespace PhotoAPI.Controllers
             }
             // Sign in the user with this external login provider if the user already has a login.
             var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
+
+
+
             if (result.Succeeded)
             {
                 //var oauthService = new Oauth2Service(new BaseClientService.Initializer { ApiKey = _configuration["GoogleKey"] });
@@ -237,14 +240,17 @@ namespace PhotoAPI.Controllers
             if (result.IsLockedOut)
             {
                 return new RedirectResult(angularURL);
-            } else
+            }
+            else
             {
                 // If the user does not have an account, then ask the user to create an account.
                 if (info.Principal.HasClaim(c => c.Type == ClaimTypes.Email))
                 {
                     var mail = info.Principal.FindFirstValue(ClaimTypes.Email);
                 }
-                return new RedirectResult(angularURL + "/Account/RegisterExternal"); 
+
+
+                return new RedirectResult(angularURL + "/Account/RegisterExternal");
             }
         }
 
@@ -274,8 +280,7 @@ namespace PhotoAPI.Controllers
             if (result.IsLockedOut)
             {
                 return new RedirectResult(angularURL);
-            }
-            else
+            } else
             {
                 // If the user does not have an account, then ask the user to create an account.
                 if (info.Principal.HasClaim(c => c.Type == ClaimTypes.Email))

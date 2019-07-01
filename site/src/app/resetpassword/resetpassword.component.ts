@@ -15,9 +15,7 @@ export class ResetpasswordComponent implements OnInit {
 
   constructor(private service: HttpService, private router: Router, private activateRoute: ActivatedRoute, private fb: FormBuilder) {
     this.code = this.activateRoute.snapshot.queryParamMap.get("code");
-    console.log(this.code);
     this.code = this.code.replace(/\s+/g, '+');
-    console.log(this.code);
     this.resetPassForm = this.fb.group({
       resEmail: ["", [Validators.required, Validators.email]],
       resPass: ["", Validators.required],

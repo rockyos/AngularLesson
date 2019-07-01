@@ -98,17 +98,20 @@ export class HttpService {
   }
 
   public registerExtPost(email): Observable<string> {
+    const httpOptions = {
+      responseType: 'text' as 'json'
+    };
     const url = `${environment.apiUrl}Account/ExternalConfirmation`;
     const formData = new FormData();
     formData.append('Email', email);
-    return this.http.post<string>(url, formData);
+    return this.http.post<string>(url, formData, httpOptions);
   }
 
   public googleGet(): Observable<string>{
     const httpOptions = {
       responseType: 'text' as 'json'
     };
-    const url = `${environment.apiUrl}Account/ExternalLogin?provider=Google&redirect_uri=https%3A%2F%2Flocalhost%3A44375%2FAccount%2FFacebook`;
+    const url = `${environment.apiUrl}Account/ExternalLogin?provider=Google&redirect_uri=https%3A%2F%2Flocalhost%3A44375%2FAccount%2FGoogle`;
     return this.http.get<string>(url, httpOptions);
   }
 
