@@ -99,6 +99,8 @@ namespace PhotoAPI
             services.AddScoped<IAddPhotoService, AddPhotoService>();
             services.AddScoped<ISavePhotoService, SavePhotoService>();
             services.AddScoped<IDeleteService, DeleteService>();
+            services.AddScoped<IGenerateJwtTokenService, GenerateJwtTokenService>();
+            services.AddScoped<IGetExternalLoginService, GetExternalLoginService>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1).AddViewOptions(options =>
             {

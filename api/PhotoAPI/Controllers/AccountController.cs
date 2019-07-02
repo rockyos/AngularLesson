@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using PhotoAPI.Models.Identity;
+using PhotoAPI.Services.Interfaces;
 
 namespace PhotoAPI.Controllers
 {
@@ -24,17 +25,20 @@ namespace PhotoAPI.Controllers
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly IConfiguration _configuration;
         private readonly IEmailSender _messageService;
-
-        //public IList<AuthenticationScheme> ExternalLogins { get; set; }
+        private readonly IGenerateJwtTokenService _generateJwtTokenService;
+        private readonly IGetExternalLoginService _getExternalLoginService;
         public readonly string angularURL = "http://localhost:4200";
 
         public AccountController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager,
-        IEmailSender messageService, IConfiguration configuration)
+        IEmailSender messageService, IConfiguration configuration, IGenerateJwtTokenService generateJwtTokenService,
+        IGetExternalLoginService getExternalLoginService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _messageService = messageService;
             _configuration = configuration;
+            _generateJwtTokenService = generateJwtTokenService;
+            _getExternalLoginService = getExternalLoginService;
         }
 
         [HttpPost]
@@ -55,7 +59,8 @@ namespace PhotoAPI.Controllers
                       $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
 
                     await _signInManager.SignInAsync(user, isPersistent: false);
-                    return await GenerateJwtToken(model.Email, user);
+                    return await _generateJwtTokenService.GenerateJwtToken(model.Email, user, _configuration["JwtKey"],
+                        _configuration["JwtExpireDays"], _configuration["JwtIssuer"]);
                 }
                 foreach (var error in result.Errors)
                 {
@@ -168,7 +173,8 @@ namespace PhotoAPI.Controllers
                 if (result.Succeeded)
                 {
                     var user = await _userManager.FindByEmailAsync(model.Email);
-                    return await GenerateJwtToken(model.Email, user);
+                    return await _generateJwtTokenService.GenerateJwtToken(model.Email, user, _configuration["JwtKey"],
+                        _configuration["JwtExpireDays"], _configuration["JwtIssuer"]);
                 } else
                 {
                     return StatusCode(401, "Invalid login attempt.");
@@ -178,29 +184,7 @@ namespace PhotoAPI.Controllers
             return StatusCode(401, messages);
         }
 
-        private async Task<object> GenerateJwtToken(string email, IdentityUser user)
-        {
-            var claims = new List<Claim>
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, email),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.NameIdentifier, user.Id)
-            };
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtKey"]));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            var expires = DateTime.Now.AddDays(Convert.ToDouble(_configuration["JwtExpireDays"]));
-            var token = new JwtSecurityToken(
-                _configuration["JwtIssuer"],
-                _configuration["JwtIssuer"],
-                claims,
-                expires: expires,
-                signingCredentials: creds
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
-
+       
         [HttpGet]
         [Route("ExternalLogin")]
         public IActionResult ExternalLogin(string provider, string redirect_uri = null)
@@ -214,33 +198,8 @@ namespace PhotoAPI.Controllers
         [Route("Google")]
         public async Task<object> Google()
         {
-            var info = await _signInManager.GetExternalLoginInfoAsync();
-            var email = info.Principal.FindFirstValue(ClaimTypes.Email);
-            if (info == null)
-            {
-                return StatusCode(500, "Error loading external login information.");
-            }
-            // Sign in the user with this external login provider if the user already has a login.
-            var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
-            if (result.Succeeded)
-            {
-                var user = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
-                var name = info.Principal.FindFirstValue(ClaimTypes.Name);
-                return await GenerateJwtToken(user.Email + $"({name})", user);
-            } else if (email != null)
-            {
-                var user = await _userManager.FindByEmailAsync(email);
-                if (user == null) {
-                    user = new IdentityUser { UserName = email, Email = email, EmailConfirmed = true };
-                    await _userManager.CreateAsync(user);
-                }
-                await _userManager.AddLoginAsync(user, info);
-             //   await _signInManager.SignInAsync(user, isPersistent: false);
-                var name = info.Principal.FindFirstValue(ClaimTypes.Name);
-                return await GenerateJwtToken(email + $"({name})", user);
-            } else {
-                return StatusCode(401, "401 Unauthorized");
-            }
+            return await _getExternalLoginService.ExternalLoginAsync(_userManager, _signInManager, _generateJwtTokenService, this,
+                 _configuration["JwtKey"], _configuration["JwtExpireDays"], _configuration["JwtIssuer"]);
         }
 
 
@@ -248,35 +207,8 @@ namespace PhotoAPI.Controllers
         [Route("Facebook")]
         public async Task<object> Facebook()
         {
-            var info = await _signInManager.GetExternalLoginInfoAsync();
-            var email = info.Principal.FindFirstValue(ClaimTypes.Email);
-            if (info == null)
-            {
-                return StatusCode(500, "Error loading external login information.");
-            }
-            // Sign in the user with this external login provider if the user already has a login.
-            var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
-            if (result.Succeeded)
-            {
-                var user = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
-                var name = info.Principal.FindFirstValue(ClaimTypes.Name);
-                return await GenerateJwtToken(user.Email + $"({name})", user);
-            } else if (email != null)
-            {
-                var user = await _userManager.FindByEmailAsync(email);
-                if (user == null)
-                {
-                    user = new IdentityUser { UserName = email, Email = email, EmailConfirmed = true };
-                    await _userManager.CreateAsync(user);
-                }
-                await _userManager.AddLoginAsync(user, info);
-              //  await _signInManager.SignInAsync(user, isPersistent: false);
-                var name = info.Principal.FindFirstValue(ClaimTypes.Name);
-                return await GenerateJwtToken(email + $"({name})", user);
-            } else
-            {
-                return StatusCode(401, "401 Unauthorized");
-            }
+            return await _getExternalLoginService.ExternalLoginAsync(_userManager, _signInManager, _generateJwtTokenService, this,
+                 _configuration["JwtKey"], _configuration["JwtExpireDays"], _configuration["JwtIssuer"]);
         }
 
         [HttpPost]
@@ -305,9 +237,9 @@ namespace PhotoAPI.Controllers
                     result = await _userManager.AddLoginAsync(user, info);
                     if (result.Succeeded)
                     {
-                       // await _signInManager.SignInAsync(user, isPersistent: false);
                         var name = info.Principal.FindFirstValue(ClaimTypes.Name);
-                        return await GenerateJwtToken(model.Email + $"({name})", user);
+                        return await _generateJwtTokenService.GenerateJwtToken(model.Email + $"({name})", user, _configuration["JwtKey"],
+                        _configuration["JwtExpireDays"], _configuration["JwtIssuer"]);
                     }
                 }
                 foreach (var error in result.Errors)

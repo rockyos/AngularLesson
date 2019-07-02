@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Caching.Distributed;
+﻿using Microsoft.Extensions.Caching.Distributed;
 using PhotoAPI.Models.Dto;
 using System.Collections.Generic;
 using System.Threading.Tasks;
