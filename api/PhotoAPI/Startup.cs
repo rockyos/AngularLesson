@@ -66,31 +66,15 @@ namespace PhotoAPI
                };
             });
 
-            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme
-                //options.DefaultChallengeScheme = FacebookDefaults.AuthenticationScheme;
-                //options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                //options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-            ) 
-            //.AddCookie("ExternalCookie", options =>
-            //{
-            //    options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
-            //    options.SlidingExpiration = true;
-            //    options.Cookie.HttpOnly = true;
-            //    //options.Cookie.SameSite = SameSiteMode.Strict; 
-            //    //options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-            //})
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme) 
             .AddGoogle(options =>
             {
-                //options.CallbackPath = "/Account/Callback_Google";
                 options.ClientId = Configuration["GoogleID"]; 
                 options.ClientSecret = Configuration["GoogleKey"]; 
-                //options.SignInScheme = "ExternalCookie";
             }).AddFacebook(options =>
             {
-                //options.CallbackPath = "/Account/Facebooks";
                 options.AppId = Configuration["FacebookID"];
                 options.AppSecret = Configuration["FacebookKey"];
-                //options.SignInScheme = "ExternalCookie";
             }).AddCookie();
 
             services.Configure<EmailSettings>(Configuration.GetSection("EmailSettings"));

@@ -6,8 +6,6 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Google.Apis.Oauth2.v2;
-using Google.Apis.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -237,7 +235,7 @@ namespace PhotoAPI.Controllers
                     await _userManager.CreateAsync(user);
                 }
                 await _userManager.AddLoginAsync(user, info);
-                await _signInManager.SignInAsync(user, isPersistent: false);
+             //   await _signInManager.SignInAsync(user, isPersistent: false);
                 var name = info.Principal.FindFirstValue(ClaimTypes.Name);
                 return await GenerateJwtToken(email + $"({name})", user);
             } else {
@@ -272,7 +270,7 @@ namespace PhotoAPI.Controllers
                     await _userManager.CreateAsync(user);
                 }
                 await _userManager.AddLoginAsync(user, info);
-                await _signInManager.SignInAsync(user, isPersistent: false);
+              //  await _signInManager.SignInAsync(user, isPersistent: false);
                 var name = info.Principal.FindFirstValue(ClaimTypes.Name);
                 return await GenerateJwtToken(email + $"({name})", user);
             } else
@@ -307,7 +305,7 @@ namespace PhotoAPI.Controllers
                     result = await _userManager.AddLoginAsync(user, info);
                     if (result.Succeeded)
                     {
-                        await _signInManager.SignInAsync(user, isPersistent: false);
+                       // await _signInManager.SignInAsync(user, isPersistent: false);
                         var name = info.Principal.FindFirstValue(ClaimTypes.Name);
                         return await GenerateJwtToken(model.Email + $"({name})", user);
                     }
