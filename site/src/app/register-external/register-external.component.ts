@@ -30,7 +30,7 @@ export class RegisterExternalComponent implements OnInit {
         this.jwt = resualt,
           this.token.setToken(this.jwt),
           this.token.loggedOn()
-      }, error => {console.log(error), typeof error['error'] === 'string' ? this.errorMessage = error['error'] : this.errorMessage = "error" }
+      }, error => { typeof error['error'] === 'string' ? this.errorMessage = error['error'] : this.errorMessage = "error" }
     );
   }
 

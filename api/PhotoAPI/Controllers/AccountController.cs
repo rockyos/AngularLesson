@@ -223,34 +223,13 @@ namespace PhotoAPI.Controllers
             }
             // Sign in the user with this external login provider if the user already has a login.
             var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
-
-
-
             if (result.Succeeded)
             {
-                //var oauthService = new Oauth2Service(new BaseClientService.Initializer { ApiKey = _configuration["GoogleKey"] });
-                //var tokenInfoRequest = oauthService.Tokeninfo();
-                //var userInfo = await tokenInfoRequest.ExecuteAsync();
-                //var user = await _userManager.FindByEmailAsync(userInfo.Email);
-                //return await GenerateJwtToken(userInfo.Email, user);
-                ////////////////
-                // var name = info.Principal.FindFirstValue(ClaimTypes.Name);
-                return new RedirectResult(angularURL);
-            }
-            if (result.IsLockedOut)
-            {
-                return new RedirectResult(angularURL);
-            }
-            else
-            {
-                // If the user does not have an account, then ask the user to create an account.
-                if (info.Principal.HasClaim(c => c.Type == ClaimTypes.Email))
-                {
-                    var mail = info.Principal.FindFirstValue(ClaimTypes.Email);
-                }
-
-
-                return new RedirectResult(angularURL + "/Account/RegisterExternal");
+                var user = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
+                var name = info.Principal.FindFirstValue(ClaimTypes.Name);
+                return await GenerateJwtToken(user.Email + $"({name})", user);
+            } else {
+                return StatusCode(401, "401 Unauthorized");
             }
         }
 
@@ -268,26 +247,13 @@ namespace PhotoAPI.Controllers
             var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
             if (result.Succeeded)
             {
-                //var oauthService = new Oauth2Service(new BaseClientService.Initializer { ApiKey = _configuration["GoogleKey"] });
-                //var tokenInfoRequest = oauthService.Tokeninfo();
-                //var userInfo = await tokenInfoRequest.ExecuteAsync();
-                //var user = await _userManager.FindByEmailAsync(userInfo.Email);
-                //return await GenerateJwtToken(userInfo.Email, user);
-                ////////////////
-               // var name = info.Principal.FindFirstValue(ClaimTypes.Name);
-                return new RedirectResult(angularURL);
+                var user = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
+                var name = info.Principal.FindFirstValue(ClaimTypes.Name);
+                return await GenerateJwtToken(user.Email + $"({name})", user);
             }
-            if (result.IsLockedOut)
+            else
             {
-                return new RedirectResult(angularURL);
-            } else
-            {
-                // If the user does not have an account, then ask the user to create an account.
-                if (info.Principal.HasClaim(c => c.Type == ClaimTypes.Email))
-                {
-                    var mail = info.Principal.FindFirstValue(ClaimTypes.Email);
-                }
-                return new RedirectResult(angularURL + "/Account/RegisterExternal");
+                return StatusCode(401, "401 Unauthorized");
             }
         }
 
@@ -305,13 +271,21 @@ namespace PhotoAPI.Controllers
             {
                 var user = new IdentityUser { UserName = model.Email, Email = model.Email };
                 var result = await _userManager.CreateAsync(user);
-                if (result.Succeeded)
+                if (result.Succeeded) 
                 {
+                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code });
+                    callbackUrl = $"https://localhost:44375{callbackUrl}";
+
+                    await _messageService.SendEmailAsync(model.Email, "Confirm your email",
+                      $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+
                     result = await _userManager.AddLoginAsync(user, info);
                     if (result.Succeeded)
                     {
-                       await _signInManager.SignInAsync(user, isPersistent: false);
-                       return await GenerateJwtToken(model.Email, user);
+                        await _signInManager.SignInAsync(user, isPersistent: false);
+                        var name = info.Principal.FindFirstValue(ClaimTypes.Name);
+                        return await GenerateJwtToken(model.Email + $"({name})", user);
                     }
                 }
                 foreach (var error in result.Errors)

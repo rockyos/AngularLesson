@@ -3,6 +3,7 @@ import { FormGroup, Validators, FormBuilder } from '@angular/forms';
 import { HttpService } from '../http.service';
 import { environment } from 'src/environments/environment.prod';
 import { TokenService } from '../token.service';
+import { Router } from '@angular/router';
 
 
 @Component({
@@ -18,7 +19,7 @@ export class LoginComponent implements OnInit {
   jwt: string;
   rememberMe: boolean = false;
 
-  constructor(private service: HttpService, private token: TokenService, private fb: FormBuilder) {
+  constructor(private service: HttpService, private token: TokenService, private router: Router, private fb: FormBuilder) {
     this.loginForm = this.fb.group({
       userEmail: ["", [Validators.required, Validators.email]],
       userPassword: ["", Validators.required],
@@ -40,10 +41,29 @@ export class LoginComponent implements OnInit {
     }, error => { typeof error['error'] === 'string' ? this.errorMessage = error['error'] : this.errorMessage = "error" });
   }
 
-  googleBtn(){
-    this.service.googleGet().subscribe();
+  googleBtn() {
+    this.service.googleGet().subscribe(
+      resualt => {
+        this.jwt = resualt,
+          this.token.setToken(this.jwt),
+          this.token.loggedOn()
+      }, error => {
+        error['error'] === "401 Unauthorized" ? this.router.navigate(['Account/RegisterExternal']) : null,
+          typeof error['error'] === 'string' ? this.errorMessage = error['error'] : this.errorMessage = "error"
+      }
+    );
   }
-  facebookBtn(){
-    this.service.facebookGet().subscribe();
+
+  facebookBtn() {
+    this.service.facebookGet().subscribe(
+      resualt => {
+        this.jwt = resualt,
+          this.token.setToken(this.jwt),
+          this.token.loggedOn()
+      }, error => {
+        error['error'] === "401 Unauthorized" ? this.router.navigate(['Account/RegisterExternal']) : null,
+          typeof error['error'] === 'string' ? this.errorMessage = error['error'] : this.errorMessage = "error"
+      }
+    );
   }
 }
