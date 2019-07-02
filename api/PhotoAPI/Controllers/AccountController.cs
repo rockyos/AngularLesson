@@ -217,6 +217,7 @@ namespace PhotoAPI.Controllers
         public async Task<object> Google()
         {
             var info = await _signInManager.GetExternalLoginInfoAsync();
+            var email = info.Principal.FindFirstValue(ClaimTypes.Email);
             if (info == null)
             {
                 return StatusCode(500, "Error loading external login information.");
@@ -228,6 +229,17 @@ namespace PhotoAPI.Controllers
                 var user = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
                 var name = info.Principal.FindFirstValue(ClaimTypes.Name);
                 return await GenerateJwtToken(user.Email + $"({name})", user);
+            } else if (email != null)
+            {
+                var user = await _userManager.FindByEmailAsync(email);
+                if (user == null) {
+                    user = new IdentityUser { UserName = email, Email = email, EmailConfirmed = true };
+                    await _userManager.CreateAsync(user);
+                }
+                await _userManager.AddLoginAsync(user, info);
+                await _signInManager.SignInAsync(user, isPersistent: false);
+                var name = info.Principal.FindFirstValue(ClaimTypes.Name);
+                return await GenerateJwtToken(email + $"({name})", user);
             } else {
                 return StatusCode(401, "401 Unauthorized");
             }
@@ -239,6 +251,7 @@ namespace PhotoAPI.Controllers
         public async Task<object> Facebook()
         {
             var info = await _signInManager.GetExternalLoginInfoAsync();
+            var email = info.Principal.FindFirstValue(ClaimTypes.Email);
             if (info == null)
             {
                 return StatusCode(500, "Error loading external login information.");
@@ -250,8 +263,19 @@ namespace PhotoAPI.Controllers
                 var user = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
                 var name = info.Principal.FindFirstValue(ClaimTypes.Name);
                 return await GenerateJwtToken(user.Email + $"({name})", user);
-            }
-            else
+            } else if (email != null)
+            {
+                var user = await _userManager.FindByEmailAsync(email);
+                if (user == null)
+                {
+                    user = new IdentityUser { UserName = email, Email = email, EmailConfirmed = true };
+                    await _userManager.CreateAsync(user);
+                }
+                await _userManager.AddLoginAsync(user, info);
+                await _signInManager.SignInAsync(user, isPersistent: false);
+                var name = info.Principal.FindFirstValue(ClaimTypes.Name);
+                return await GenerateJwtToken(email + $"({name})", user);
+            } else
             {
                 return StatusCode(401, "401 Unauthorized");
             }
