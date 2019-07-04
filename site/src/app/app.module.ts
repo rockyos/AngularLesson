@@ -23,6 +23,17 @@ import { TokenService } from './token.service';
 import { ImagePipe } from './image.pipe';
 import { SafePipe } from './safe.pipe';
 import { RegisterExternalComponent } from './register-external/register-external.component';
+import { Angular2SocialLoginModule } from 'angular2-social-login';
+
+let providers = {
+  "google": {
+    "clientId": "409068124383-d3kr9t4n79umkc5nvsfh0tkob3cjp30m.apps.googleusercontent.com"
+  },
+  "facebook": {
+    "clientId": "408550926416573",
+    "apiVersion": "v3.3" 
+  }
+};
 
 @NgModule({
   declarations: [
@@ -46,9 +57,12 @@ import { RegisterExternalComponent } from './register-external/register-external
     AppRoutingModule,
     HttpClientModule,
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    Angular2SocialLoginModule
   ],
   providers: [HttpService, AuthGuard, TokenService, {provide: HTTP_INTERCEPTORS, useClass: HttpConfigInterceptor, multi: true}],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
+
+Angular2SocialLoginModule.loadProvidersScripts(providers);

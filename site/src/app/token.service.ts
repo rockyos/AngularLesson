@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
 import * as jwt_decode from 'jwt-decode';
 
@@ -7,7 +7,7 @@ import * as jwt_decode from 'jwt-decode';
 })
 export class TokenService {
 
-  constructor(private router: Router) { }
+  constructor(private router: Router, private ngZone: NgZone) { }
 
   tokenKey: string = 'jwt';
   localStorage: boolean = false;
@@ -19,7 +19,8 @@ export class TokenService {
   loggedOn() {
     var token = this.getToken();
     if (token) {
-      this.router.navigate(['']);
+      //this.router.navigate(['']);
+      this.ngZone.run(() => this.router.navigate([''])).then();
     }
   }
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -12,6 +13,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
 using PhotoAPI.Models.Identity;
 using PhotoAPI.Services.Interfaces;
 
@@ -28,6 +30,7 @@ namespace PhotoAPI.Controllers
         private readonly IGenerateJwtTokenService _generateJwtTokenService;
         private readonly IGetExternalLoginService _getExternalLoginService;
         public readonly string angularURL = "http://localhost:4200";
+        private static readonly HttpClient client = new HttpClient();
 
         public AccountController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager,
         IEmailSender messageService, IConfiguration configuration, IGenerateJwtTokenService generateJwtTokenService,
@@ -184,72 +187,151 @@ namespace PhotoAPI.Controllers
             return StatusCode(401, messages);
         }
 
-       
         [HttpGet]
-        [Route("ExternalLogin")]
-        public IActionResult ExternalLogin(string provider, string redirect_uri = null)
+        [Route("GoogleGetInfoByToken")]
+        public async Task<object> GoogleGetInfoByToken(string token)
         {
-            var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirect_uri);
-            return new ChallengeResult(provider, properties);
-        }
-
-
-        [HttpGet]
-        [Route("Google")]
-        public async Task<object> Google()
-        {
-            return await _getExternalLoginService.ExternalLoginAsync(_userManager, _signInManager, _generateJwtTokenService, this,
-                 _configuration["JwtKey"], _configuration["JwtExpireDays"], _configuration["JwtIssuer"]);
-        }
-
-
-        [HttpGet]
-        [Route("Facebook")]
-        public async Task<object> Facebook()
-        {
-            return await _getExternalLoginService.ExternalLoginAsync(_userManager, _signInManager, _generateJwtTokenService, this,
-                 _configuration["JwtKey"], _configuration["JwtExpireDays"], _configuration["JwtIssuer"]);
-        }
-
-        [HttpPost]
-        [Route("ExternalConfirmation")]
-        public async Task<object> OnPostExternalConfirmationAsync(ExternalLogin model)
-        {
-            // Get the information about the user from the external login provider
-            var info = await  _signInManager.GetExternalLoginInfoAsync();
-            if (info == null)
+            var userInfoResponse = await client.GetStringAsync($"https://www.googleapis.com/plus/v1/people/me?access_token={token}");
+            var userInfo = JsonConvert.DeserializeObject<GoogleModel>(userInfoResponse);
+            if (userInfo == null)
             {
-                return StatusCode(500, "Error loading external login information during confirmation.");
+                return StatusCode(500, "Error loading external login information.");
             }
-            if (ModelState.IsValid)
+            var result = await _signInManager.ExternalLoginSignInAsync("Google", userInfo.id, isPersistent: false, bypassTwoFactor: true);
+            if (result.Succeeded)
             {
-                var user = new IdentityUser { UserName = model.Email, Email = model.Email };
-                var result = await _userManager.CreateAsync(user);
-                if (result.Succeeded) 
-                {
-                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                    var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code });
-                    callbackUrl = $"https://localhost:44375{callbackUrl}";
-
-                    await _messageService.SendEmailAsync(model.Email, "Confirm your email",
-                      $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
-
-                    result = await _userManager.AddLoginAsync(user, info);
-                    if (result.Succeeded)
-                    {
-                        var name = info.Principal.FindFirstValue(ClaimTypes.Name);
-                        return await _generateJwtTokenService.GenerateJwtToken(model.Email + $"({name})", user, _configuration["JwtKey"],
-                        _configuration["JwtExpireDays"], _configuration["JwtIssuer"]);
-                    }
-                }
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError(string.Empty, error.Description);
-                }
+                var user = await _userManager.FindByLoginAsync("Google", userInfo.id);
+                return await _generateJwtTokenService.GenerateJwtToken(user.Email + $"({userInfo.displayName})", user,
+                    _configuration["JwtKey"], _configuration["JwtExpireDays"], _configuration["JwtIssuer"]);
             }
-            string messages = string.Join("; ", ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage));
-            return StatusCode(401, messages);
+            else if (userInfo.emails != null)
+            {
+                IdentityUser user = null;
+                string mail = null;
+                foreach (var item in userInfo.emails)
+                {
+                   mail = item.FirstOrDefault(x => x.Key == "value").Value;
+                   user = await _userManager.FindByEmailAsync(mail);
+                   if(user != null) break; 
+                }
+                if (user == null)
+                {
+                    user = new IdentityUser { UserName = mail, Email = mail, EmailConfirmed = true };
+                    await _userManager.CreateAsync(user);
+                }
+                await _userManager.AddLoginAsync(user, new UserLoginInfo("Google", userInfo.id, "Google"));
+                return await _generateJwtTokenService.GenerateJwtToken(user.Email + $"({userInfo.displayName})", user,
+                   _configuration["JwtKey"], _configuration["JwtExpireDays"], _configuration["JwtIssuer"]);
+            }
+            else
+            {
+                return StatusCode(401, "401 Unauthorized");
+            }
         }
+
+        [HttpGet]
+        [Route("FacebookGetInfoByToken")]
+        public async Task<object> FacebookGetInfoByToken(string token)
+        {
+            var userInfoResponse = await client.GetStringAsync($"https://graph.facebook.com/v2.8/me?fields=id,email,first_name,last_name,name,gender,locale,birthday,picture&access_token={token}");
+            var userInfo = JsonConvert.DeserializeObject<FacebookModel>(userInfoResponse);
+            if (userInfo == null)
+            {
+                return StatusCode(500, "Error loading external login information.");
+            }
+            var result = await _signInManager.ExternalLoginSignInAsync("Facebook", userInfo.id, isPersistent: false, bypassTwoFactor: true);
+            if (result.Succeeded)
+            {
+                var user = await _userManager.FindByLoginAsync("Facebook", userInfo.id);
+                return await _generateJwtTokenService.GenerateJwtToken(user.Email + $"({userInfo.name})", user,
+                    _configuration["JwtKey"], _configuration["JwtExpireDays"], _configuration["JwtIssuer"]);
+            }
+            else if (userInfo.email != null)
+            {
+                var user = await _userManager.FindByEmailAsync(userInfo.email);
+                if (user == null)
+                {
+                    user = new IdentityUser { UserName = userInfo.email, Email = userInfo.email, EmailConfirmed = true };
+                    await _userManager.CreateAsync(user);
+                }
+                await _userManager.AddLoginAsync(user, new UserLoginInfo("Facebook", userInfo.id, "Facebook"));
+                return await _generateJwtTokenService.GenerateJwtToken(user.Email + $"({userInfo.name})", user,
+                   _configuration["JwtKey"], _configuration["JwtExpireDays"], _configuration["JwtIssuer"]);
+            }
+            else
+            {
+                return StatusCode(401, "401 Unauthorized");
+            }
+        }
+
+      
+
+        //[HttpGet]
+        //[Route("ExternalLogin")]
+        //public IActionResult ExternalLogin(string provider, string redirect_uri = null)
+        //{
+        //    var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirect_uri);
+        //    return new ChallengeResult(provider, properties);
+        //}
+
+
+        //[HttpGet]
+        //[Route("Google")]
+        //public async Task<object> Google()
+        //{
+        //    return await _getExternalLoginService.ExternalLoginAsync(_userManager, _signInManager, _generateJwtTokenService, this,
+        //         _configuration["JwtKey"], _configuration["JwtExpireDays"], _configuration["JwtIssuer"]);
+        //}
+
+
+        //[HttpGet]
+        //[Route("Facebook")]
+        //public async Task<object> Facebook()
+        //{
+        //    return await _getExternalLoginService.ExternalLoginAsync(_userManager, _signInManager, _generateJwtTokenService, this,
+        //         _configuration["JwtKey"], _configuration["JwtExpireDays"], _configuration["JwtIssuer"]);
+        //}
+
+        //[HttpPost]
+        //[Route("ExternalConfirmation")]
+        //public async Task<object> OnPostExternalConfirmationAsync(ExternalLogin model)
+        //{
+        //    // Get the information about the user from the external login provider
+        //    var info = await  _signInManager.GetExternalLoginInfoAsync();
+        //    if (info == null)
+        //    {
+        //        return StatusCode(500, "Error loading external login information during confirmation.");
+        //    }
+        //    if (ModelState.IsValid)
+        //    {
+        //        var user = new IdentityUser { UserName = model.Email, Email = model.Email };
+        //        var result = await _userManager.CreateAsync(user);
+        //        if (result.Succeeded) 
+        //        {
+        //            var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        //            var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code });
+        //            callbackUrl = $"https://localhost:44375{callbackUrl}";
+
+        //            await _messageService.SendEmailAsync(model.Email, "Confirm your email",
+        //              $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+
+        //            result = await _userManager.AddLoginAsync(user, info);
+        //            if (result.Succeeded)
+        //            {
+        //                var name = info.Principal.FindFirstValue(ClaimTypes.Name);
+        //                return await _generateJwtTokenService.GenerateJwtToken(model.Email + $"({name})", user, _configuration["JwtKey"],
+        //                _configuration["JwtExpireDays"], _configuration["JwtIssuer"]);
+        //            }
+        //        }
+        //        foreach (var error in result.Errors)
+        //        {
+        //            ModelState.AddModelError(string.Empty, error.Description);
+        //        }
+        //    }
+        //    string messages = string.Join("; ", ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage));
+        //    return StatusCode(401, messages);
+        //}
+
 
     }
 }
