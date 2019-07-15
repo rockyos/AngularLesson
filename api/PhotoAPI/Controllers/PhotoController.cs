@@ -80,12 +80,6 @@ namespace PhotoAPI.Controllers
             await _cache.RemoveAsync(tokenKey);
         }
 
-        //[HttpPut("{id}")]
-        //public void Put(int id, [FromForm] string value)
-        //{
-
-        //}
-
         [HttpDelete("{id}")]
         public async Task DeleteAsync(string id)
         {
