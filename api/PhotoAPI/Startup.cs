@@ -93,6 +93,8 @@ namespace PhotoAPI
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
+
+
             services.AddScoped<UnitOfWork>();
             services.AddScoped<IResizeService, ResizeService>();
             services.AddScoped<IGetPhotoService, GetPhotoService>();
@@ -101,6 +103,10 @@ namespace PhotoAPI
             services.AddScoped<IDeleteService, DeleteService>();
             services.AddScoped<IGenerateJwtTokenService, GenerateJwtTokenService>();
             services.AddScoped<IGetExternalLoginService, GetExternalLoginService>();
+            services.AddHttpClient<IGetExternalLoginService, GetExternalLoginService>();
+            //services.AddScoped<UserManager<IdentityUser>>();
+            //services.AddScoped<SignInManager<IdentityUser>>();
+
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1).AddViewOptions(options =>
             {

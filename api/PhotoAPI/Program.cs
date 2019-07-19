@@ -69,6 +69,7 @@ namespace PhotoAPI
         {
             return WebHost.CreateDefaultBuilder(args)
                 .UseStartup<Startup>()
+                .UseDefaultServiceProvider(options => options.ValidateScopes = false)
                 .UseSerilog()
                 .Build();
         }

@@ -1,19 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
-using System.Net.Http;
-using System.Security.Claims;
-using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json;
 using PhotoAPI.Models.Identity;
 using PhotoAPI.Services.Interfaces;
 
@@ -25,12 +19,10 @@ namespace PhotoAPI.Controllers
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
-        private readonly IConfiguration _configuration;
         private readonly IEmailSender _messageService;
         private readonly IGenerateJwtTokenService _generateJwtTokenService;
         private readonly IGetExternalLoginService _getExternalLoginService;
         public readonly string angularURL = "http://localhost:4200";
-        private static readonly HttpClient client = new HttpClient();
 
         public AccountController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager,
         IEmailSender messageService, IConfiguration configuration, IGenerateJwtTokenService generateJwtTokenService,
@@ -39,7 +31,6 @@ namespace PhotoAPI.Controllers
             _userManager = userManager;
             _signInManager = signInManager;
             _messageService = messageService;
-            _configuration = configuration;
             _generateJwtTokenService = generateJwtTokenService;
             _getExternalLoginService = getExternalLoginService;
         }
@@ -55,15 +46,15 @@ namespace PhotoAPI.Controllers
                 if (result.Succeeded)
                 {
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+
                     var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code });
-                    callbackUrl = $"https://localhost:44375{callbackUrl}";
+                    callbackUrl = $"https://{HttpContext.Request.Host}{callbackUrl}";
 
                     await _messageService.SendEmailAsync(model.Email, "Confirm your email",
                       $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
 
                     await _signInManager.SignInAsync(user, isPersistent: false);
-                    return await _generateJwtTokenService.GenerateJwtToken(model.Email, user, _configuration["JwtKey"],
-                        _configuration["JwtExpireDays"], _configuration["JwtIssuer"]);
+                    return await _generateJwtTokenService.GenerateJwtToken(model.Email, user);
                 }
                 foreach (var error in result.Errors)
                 {
@@ -113,7 +104,7 @@ namespace PhotoAPI.Controllers
                 var code = await _userManager.GeneratePasswordResetTokenAsync(user);
 
                 var callbackUrl = Url.Action("ResetPassword", "Account", new { userId = user.Id, code = code });
-                callbackUrl = $"https://localhost:44375{callbackUrl}";
+                callbackUrl = $"https://{HttpContext.Request.Host}{callbackUrl}";
 
                 await _messageService.SendEmailAsync(
                     model.Email,
@@ -176,8 +167,7 @@ namespace PhotoAPI.Controllers
                 if (result.Succeeded)
                 {
                     var user = await _userManager.FindByEmailAsync(model.Email);
-                    return await _generateJwtTokenService.GenerateJwtToken(model.Email, user, _configuration["JwtKey"],
-                        _configuration["JwtExpireDays"], _configuration["JwtIssuer"]);
+                    return await _generateJwtTokenService.GenerateJwtToken(model.Email, user);
                 } else
                 {
                     return StatusCode(401, "Invalid login attempt.");
@@ -191,16 +181,14 @@ namespace PhotoAPI.Controllers
         [Route("GoogleGetInfoByToken")]
         public async Task<object> GoogleGetInfoByToken(string token)
         {
-            return await _getExternalLoginService.GoogleGetInfoByToken(token, client, _signInManager, _userManager, this,
-                _generateJwtTokenService, _configuration["JwtKey"], _configuration["JwtExpireDays"], _configuration["JwtIssuer"]);
+            return await _getExternalLoginService.GoogleGetInfoByToken(token, this);
         }
 
         [HttpGet]
         [Route("FacebookGetInfoByToken")]
         public async Task<object> FacebookGetInfoByToken(string token)
         {
-            return await _getExternalLoginService.FacebookGetInfoByToken(token, client, _signInManager, _userManager, this,
-                _generateJwtTokenService, _configuration["JwtKey"], _configuration["JwtExpireDays"], _configuration["JwtIssuer"]);
+            return await _getExternalLoginService.FacebookGetInfoByToken(token, this);
         }
 
       
@@ -218,8 +206,7 @@ namespace PhotoAPI.Controllers
         //[Route("Google")]
         //public async Task<object> Google()
         //{
-        //    return await _getExternalLoginService.ExternalLoginAsync(_userManager, _signInManager, _generateJwtTokenService, this,
-        //         _configuration["JwtKey"], _configuration["JwtExpireDays"], _configuration["JwtIssuer"]);
+        //    return await _getExternalLoginService.ExternalLoginAsync(this);
         //}
 
 
@@ -227,8 +214,7 @@ namespace PhotoAPI.Controllers
         //[Route("Facebook")]
         //public async Task<object> Facebook()
         //{
-        //    return await _getExternalLoginService.ExternalLoginAsync(_userManager, _signInManager, _generateJwtTokenService, this,
-        //         _configuration["JwtKey"], _configuration["JwtExpireDays"], _configuration["JwtIssuer"]);
+        //    return await _getExternalLoginService.ExternalLoginAsync(this);
         //}
 
         //[HttpPost]
@@ -258,8 +244,7 @@ namespace PhotoAPI.Controllers
         //            if (result.Succeeded)
         //            {
         //                var name = info.Principal.FindFirstValue(ClaimTypes.Name);
-        //                return await _generateJwtTokenService.GenerateJwtToken(model.Email + $"({name})", user, _configuration["JwtKey"],
-        //                _configuration["JwtExpireDays"], _configuration["JwtIssuer"]);
+        //                return await _generateJwtTokenService.GenerateJwtToken(model.Email + $"({name})", user);
         //            }
         //        }
         //        foreach (var error in result.Errors)

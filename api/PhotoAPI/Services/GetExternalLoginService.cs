@@ -12,9 +12,22 @@ namespace PhotoAPI.Services
 {
     public class GetExternalLoginService : IGetExternalLoginService
     {
-        public async Task<object> ExternalLoginAsync(UserManager<IdentityUser> _userManager, SignInManager<IdentityUser> _signInManager,
-             IGenerateJwtTokenService _generateJwtTokenService, Controller controller, string JwtKey, string JwtExpireDays,
-             string JwtIssuer)
+        private readonly HttpClient _httpClient;
+        private readonly IGenerateJwtTokenService _generateJwtTokenService;
+        private readonly UserManager<IdentityUser> _userManager;
+        private readonly SignInManager<IdentityUser> _signInManager;
+
+        public GetExternalLoginService(HttpClient httpClient, IGenerateJwtTokenService generateJwtTokenService,
+            UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager)
+        {
+            _httpClient = httpClient;
+            _generateJwtTokenService = generateJwtTokenService;
+            _userManager = userManager;
+            _signInManager = signInManager;
+        }
+
+
+        public async Task<object> ExternalLoginAsync(Controller controller)
         {
             var info = await _signInManager.GetExternalLoginInfoAsync();
             var email = info.Principal.FindFirstValue(ClaimTypes.Email);
@@ -28,8 +41,7 @@ namespace PhotoAPI.Services
             {
                 var user = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
                 var name = info.Principal.FindFirstValue(ClaimTypes.Name);
-                return await _generateJwtTokenService.GenerateJwtToken(user.Email + $"({name})", user, JwtKey,
-                        JwtExpireDays, JwtIssuer);
+                return await _generateJwtTokenService.GenerateJwtToken(user.Email + $"({name})", user);
             }
             else if (email != null)
             {
@@ -41,8 +53,7 @@ namespace PhotoAPI.Services
                 }
                 await _userManager.AddLoginAsync(user, info);
                 var name = info.Principal.FindFirstValue(ClaimTypes.Name);
-                return await _generateJwtTokenService.GenerateJwtToken(email + $"({name})", user, JwtKey,
-                        JwtExpireDays, JwtIssuer);
+                return await _generateJwtTokenService.GenerateJwtToken(email + $"({name})", user);
             }
             else
             {
@@ -52,11 +63,9 @@ namespace PhotoAPI.Services
 
 
 
-        public async Task<object> GoogleGetInfoByToken(string token, HttpClient client, SignInManager<IdentityUser> _signInManager,
-            UserManager<IdentityUser> _userManager, Controller controller, IGenerateJwtTokenService _generateJwtTokenService,
-            string JwtKey, string JwtExpireDays, string JwtIssuer)
+        public async Task<object> GoogleGetInfoByToken(string token, Controller controller)
         {
-            var userInfoResponse = await client.GetStringAsync($"https://www.googleapis.com/plus/v1/people/me?access_token={token}");
+            var userInfoResponse = await _httpClient.GetStringAsync($"https://www.googleapis.com/plus/v1/people/me?access_token={token}");
             var userInfo = JsonConvert.DeserializeObject<GoogleModel>(userInfoResponse);
             if (userInfo == null)
             {
@@ -66,8 +75,7 @@ namespace PhotoAPI.Services
             if (result.Succeeded)
             {
                 var user = await _userManager.FindByLoginAsync("Google", userInfo.id);
-                return await _generateJwtTokenService.GenerateJwtToken(user.Email + $"({userInfo.displayName})", user,
-                    JwtKey, JwtExpireDays, JwtIssuer);
+                return await _generateJwtTokenService.GenerateJwtToken(user.Email + $"({userInfo.displayName})", user);
             }
             else if (userInfo.emails != null)
             {
@@ -85,8 +93,7 @@ namespace PhotoAPI.Services
                     await _userManager.CreateAsync(user);
                 }
                 await _userManager.AddLoginAsync(user, new UserLoginInfo("Google", userInfo.id, "Google"));
-                return await _generateJwtTokenService.GenerateJwtToken(user.Email + $"({userInfo.displayName})", user,
-                   JwtKey, JwtExpireDays, JwtIssuer);
+                return await _generateJwtTokenService.GenerateJwtToken(user.Email + $"({userInfo.displayName})", user);
             }
             else
             {
@@ -96,11 +103,9 @@ namespace PhotoAPI.Services
 
 
 
-        public async Task<object> FacebookGetInfoByToken(string token, HttpClient client, SignInManager<IdentityUser> _signInManager,
-            UserManager<IdentityUser> _userManager, Controller controller, IGenerateJwtTokenService _generateJwtTokenService,
-            string JwtKey, string JwtExpireDays, string JwtIssuer)
+        public async Task<object> FacebookGetInfoByToken(string token, Controller controller)
         {
-            var userInfoResponse = await client.GetStringAsync($"https://graph.facebook.com/v2.8/me?fields=id,email,name&access_token={token}");
+            var userInfoResponse = await _httpClient.GetStringAsync($"https://graph.facebook.com/v2.8/me?fields=id,email,name&access_token={token}");
             var userInfo = JsonConvert.DeserializeObject<FacebookModel>(userInfoResponse);
             if (userInfo == null)
             {
@@ -110,8 +115,7 @@ namespace PhotoAPI.Services
             if (result.Succeeded)
             {
                 var user = await _userManager.FindByLoginAsync("Facebook", userInfo.id);
-                return await _generateJwtTokenService.GenerateJwtToken(user.Email + $"({userInfo.name})", user,
-                    JwtKey, JwtExpireDays, JwtIssuer);
+                return await _generateJwtTokenService.GenerateJwtToken(user.Email + $"({userInfo.name})", user);
             }
             else if (userInfo.email != null)
             {
@@ -122,8 +126,7 @@ namespace PhotoAPI.Services
                     await _userManager.CreateAsync(user);
                 }
                 await _userManager.AddLoginAsync(user, new UserLoginInfo("Facebook", userInfo.id, "Facebook"));
-                return await _generateJwtTokenService.GenerateJwtToken(user.Email + $"({userInfo.name})", user,
-                   JwtKey, JwtExpireDays, JwtIssuer);
+                return await _generateJwtTokenService.GenerateJwtToken(user.Email + $"({userInfo.name})", user);
             }
             else
             {
